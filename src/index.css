@@ -1,0 +1,94 @@
+@import 'tailwindcss';
+
+@import '@fontsource/unbounded/500.css';
+@import '@fontsource/unbounded/600.css';
+@import '@fontsource/unbounded/700.css';
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/jetbrains-mono/500.css';
+@import '@fontsource/jetbrains-mono/600.css';
+
+:root {
+  /* Отражение — цветовые токены */
+  --blue-primary: #3a7bff;
+  --blue-deep: #0a2e6b;
+  --cream: #f7f5ef;
+  --coral: #ff3d9a;
+  --amber: #ffc94a;
+  --mint: #2ed9a6;
+
+  /* Служебные, производные от базовых */
+  --surface: #ffffff;
+  --border: #e4e0d6;
+
+  /* Шрифты */
+  --font-display: 'Unbounded', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+/* Регистрируем токены как утилиты Tailwind (bg-cream, text-blue-deep, font-display и т.д.) */
+@theme inline {
+  --color-blue-primary: var(--blue-primary);
+  --color-blue-deep: var(--blue-deep);
+  --color-cream: var(--cream);
+  --color-coral: var(--coral);
+  --color-amber: var(--amber);
+  --color-mint: var(--mint);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    color-scheme: light;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100svh;
+    background: var(--cream);
+    color: var(--blue-deep);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--blue-deep);
+    margin: 0;
+  }
+
+  #root {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
