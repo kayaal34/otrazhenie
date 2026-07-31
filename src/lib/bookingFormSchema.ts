@@ -11,6 +11,7 @@ export const bookingFormSchema = z.object({
   backgroundId: z.string().min(1, 'Выберите фон'),
   guestsCount: z.number().int().min(1, 'Минимум 1 человек').max(6, 'Максимум 6 человек'),
   withPet: z.boolean(),
+  withAddon: z.boolean(),
   comment: z.string().max(500, 'Слишком длинный комментарий').optional(),
   pdnConsent: z.boolean().refine((v) => v === true, {
     message: 'Необходимо согласие на обработку персональных данных',

@@ -96,7 +96,7 @@ export function BookingPage() {
     refetchSlots()
   }
 
-  async function handleFormSubmit(values: BookingFormValues) {
+  async function handleFormSubmit(values: BookingFormValues, promoCode: string | null) {
     if (!holdToken || heldSlots.length === 0) return
 
     goToProcessing()
@@ -113,6 +113,8 @@ export function BookingPage() {
         comment: values.comment || null,
         pdnConsent: values.pdnConsent,
         durationHours: duration,
+        withAddon: values.withAddon,
+        promoCode,
       })
 
       setConfirmed({
@@ -121,7 +123,11 @@ export function BookingPage() {
         endTime: heldSlots[heldSlots.length - 1].end_time,
         email: values.clientEmail,
         code: result.bookingCode,
-        priceKopecks: currentRule?.price_kopecks ?? 0,
+        priceKopecks: result.totalPriceKopecks,
+        basePriceKopecks: currentRule?.price_kopecks ?? 0,
+        addonKopecks: result.addonKopecks,
+        discountKopecks: result.discountKopecks,
+        promoCode: result.discountKopecks > 0 ? promoCode : null,
       })
     } catch (err) {
       const message = err instanceof BookingError ? err.message : 'Не удалось оформить бронь.'

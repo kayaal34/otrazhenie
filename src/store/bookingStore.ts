@@ -10,6 +10,10 @@ export type ConfirmedSummary = {
   email: string
   code: string
   priceKopecks: number
+  basePriceKopecks: number
+  addonKopecks: number
+  discountKopecks: number
+  promoCode: string | null
 }
 
 type BookingStore = {

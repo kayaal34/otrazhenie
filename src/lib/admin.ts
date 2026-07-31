@@ -1,6 +1,7 @@
 import { supabase } from './supabase'
 import { addDaysISO } from './format'
 import type { SlotRow } from './booking'
+import type { PromoDiscountType } from '../types/database'
 
 export type BookingDetailRow = {
   id: string
@@ -13,6 +14,9 @@ export type BookingDetailRow = {
   comment: string | null
   duration_hours: number
   total_price_kopecks: number
+  addon_kopecks: number
+  discount_kopecks: number
+  promo_code: string | null
   status: 'pending_payment' | 'confirmed' | 'cancelled' | 'completed'
   payment_provider: string | null
   paid_at: string | null
@@ -24,6 +28,18 @@ export type BookingDetailRow = {
   start_time: string | null
   end_time: string | null
   start_at: string | null
+}
+
+export type PromoCodeRow = {
+  id: string
+  code: string
+  discount_type: PromoDiscountType
+  discount_value: number
+  usage_limit: number | null
+  usage_count: number
+  is_active: boolean
+  expires_at: string | null
+  created_at: string
 }
 
 export class AdminError extends Error {}
@@ -113,5 +129,50 @@ export async function cancelBooking(bookingId: string): Promise<void> {
 
 export async function confirmPayment(bookingId: string): Promise<void> {
   const { error } = await supabase.rpc('admin_confirm_payment', { p_booking_id: bookingId })
+  if (error) throw new AdminError(error.message)
+}
+
+export async function fetchPromoCodes(): Promise<PromoCodeRow[]> {
+  const { data, error } = await supabase
+    .from('promo_codes')
+    .select('*')
+    .order('created_at', { ascending: false })
+
+  if (error) throw new AdminError(error.message)
+  return data ?? []
+}
+
+export type NewPromoCode = {
+  code: string
+  discountType: PromoDiscountType
+  discountValue: number
+  usageLimit: number | null
+  expiresAt: string | null
+}
+
+export async function createPromoCode(input: NewPromoCode): Promise<void> {
+  const { error } = await supabase.from('promo_codes').insert({
+    code: input.code.trim().toUpperCase(),
+    discount_type: input.discountType,
+    discount_value: input.discountValue,
+    usage_limit: input.usageLimit,
+    expires_at: input.expiresAt,
+  })
+
+  if (error) {
+    if (error.message.includes('duplicate') || error.message.includes('unique')) {
+      throw new AdminError('Такой промокод уже существует.')
+    }
+    throw new AdminError(error.message)
+  }
+}
+
+export async function setPromoCodeActive(id: string, isActive: boolean): Promise<void> {
+  const { error } = await supabase.from('promo_codes').update({ is_active: isActive }).eq('id', id)
+  if (error) throw new AdminError(error.message)
+}
+
+export async function deletePromoCode(id: string): Promise<void> {
+  const { error } = await supabase.from('promo_codes').delete().eq('id', id)
   if (error) throw new AdminError(error.message)
 }
