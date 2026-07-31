@@ -143,8 +143,25 @@ function mapRpcError(raw: string): BookingError {
       'Для этой длительности пока не задана цена. Свяжитесь со студией.',
     )
   }
+  if (raw.includes('PROMO_NOT_FOUND')) {
+    return new BookingError('PROMO_NOT_FOUND', 'Промокод не найден.')
+  }
+  if (raw.includes('PROMO_INACTIVE')) {
+    return new BookingError('PROMO_INACTIVE', 'Промокод больше не активен.')
+  }
+  if (raw.includes('PROMO_EXPIRED')) {
+    return new BookingError('PROMO_EXPIRED', 'Срок действия промокода истёк.')
+  }
+  if (raw.includes('PROMO_LIMIT_REACHED')) {
+    return new BookingError('PROMO_LIMIT_REACHED', 'Лимит использований промокода исчерпан.')
+  }
   return new BookingError('UNKNOWN', 'Что-то пошло не так. Попробуйте ещё раз.')
 }
+
+/** Фиксированная цена дополнительной опции (доп. фон) — 500 ₽. Держим в
+ * синхроне с константой 50000 в create_booking() на сервере. */
+export const ADDON_PRICE_KOPECKS = 50000
+export const ADDON_LABEL = 'Дополнительный фон'
 
 export async function holdSlots(
   slotIds: string[],
@@ -171,11 +188,16 @@ export type CreateBookingPayload = {
   comment: string | null
   pdnConsent: boolean
   durationHours: number
+  withAddon: boolean
+  promoCode: string | null
 }
 
 export type CreateBookingResult = {
   bookingId: string
   bookingCode: string
+  totalPriceKopecks: number
+  addonKopecks: number
+  discountKopecks: number
 }
 
 /**
@@ -196,6 +218,8 @@ export async function createBooking(
     p_comment: payload.comment,
     p_pdn_consent: payload.pdnConsent,
     p_duration_hours: payload.durationHours,
+    p_with_addon: payload.withAddon,
+    p_promo_code: payload.promoCode,
   })
 
   if (error) throw mapRpcError(error.message)
@@ -203,5 +227,35 @@ export async function createBooking(
   const row = data?.[0]
   if (!row) throw mapRpcError('UNKNOWN')
 
-  return { bookingId: row.booking_id, bookingCode: row.booking_code }
+  return {
+    bookingId: row.booking_id,
+    bookingCode: row.booking_code,
+    totalPriceKopecks: row.total_price_kopecks,
+    addonKopecks: row.addon_kopecks,
+    discountKopecks: row.discount_kopecks,
+  }
+}
+
+export type PromoValidationResult = {
+  valid: boolean
+  discountKopecks: number
+  message: string
+}
+
+/** Предпросмотр скидки — не тратит лимит использований промокода. */
+export async function validatePromoCode(
+  code: string,
+  subtotalKopecks: number,
+): Promise<PromoValidationResult> {
+  const { data, error } = await supabase.rpc('validate_promo_code', {
+    p_code: code,
+    p_subtotal_kopecks: subtotalKopecks,
+  })
+
+  if (error) throw mapRpcError(error.message)
+
+  const row = data?.[0]
+  if (!row) return { valid: false, discountKopecks: 0, message: 'Промокод не найден' }
+
+  return { valid: row.valid, discountKopecks: row.discount_kopecks, message: row.message }
 }

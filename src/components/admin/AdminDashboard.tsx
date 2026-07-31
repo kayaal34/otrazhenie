@@ -5,13 +5,15 @@ import { SlotsPanel } from './SlotsPanel'
 import { BookingsPanel } from './BookingsPanel'
 import { StatsPanel } from './StatsPanel'
 import { GalleryPanel } from './GalleryPanel'
+import { PromoCodesPanel } from './PromoCodesPanel'
 
-type Tab = 'slots' | 'bookings' | 'gallery' | 'stats'
+type Tab = 'slots' | 'bookings' | 'gallery' | 'promo' | 'stats'
 
 const tabs: { key: Tab; label: string }[] = [
   { key: 'slots', label: 'Слоты' },
   { key: 'bookings', label: 'Брони' },
   { key: 'gallery', label: 'Галерея' },
+  { key: 'promo', label: 'Промокоды' },
   { key: 'stats', label: 'Статистика' },
 ]
 
@@ -59,6 +61,7 @@ export function AdminDashboard({ session }: AdminDashboardProps) {
         {tab === 'slots' && <SlotsPanel />}
         {tab === 'bookings' && <BookingsPanel />}
         {tab === 'gallery' && <GalleryPanel />}
+        {tab === 'promo' && <PromoCodesPanel />}
         {tab === 'stats' && <StatsPanel />}
       </div>
     </div>

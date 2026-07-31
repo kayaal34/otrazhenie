@@ -141,6 +141,17 @@ export function BookingsPanel() {
                 <p className="font-mono">{formatRub(b.total_price_kopecks)}</p>
               </div>
 
+              {(b.addon_kopecks > 0 || b.discount_kopecks > 0) && (
+                <p className="mt-1 font-body text-xs text-blue-deep/50">
+                  {b.addon_kopecks > 0 && <>Доп. фон: +{formatRub(b.addon_kopecks)} </>}
+                  {b.discount_kopecks > 0 && (
+                    <>
+                      · Промокод {b.promo_code}: −{formatRub(b.discount_kopecks)}
+                    </>
+                  )}
+                </p>
+              )}
+
               {b.comment && (
                 <p className="mt-2 font-body text-sm text-blue-deep/60 italic">«{b.comment}»</p>
               )}

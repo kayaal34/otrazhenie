@@ -1,5 +1,6 @@
 export type SlotStatus = 'available' | 'locked' | 'booked'
 export type BookingStatus = 'pending_payment' | 'confirmed' | 'cancelled' | 'completed'
+export type PromoDiscountType = 'percent' | 'fixed'
 
 export type Database = {
   public: {
@@ -74,6 +75,9 @@ export type Database = {
           pdn_consent: boolean
           duration_hours: number
           total_price_kopecks: number
+          addon_kopecks: number
+          discount_kopecks: number
+          promo_code: string | null
           status: BookingStatus
           payment_provider: string | null
           payment_id: string | null
@@ -95,6 +99,9 @@ export type Database = {
           pdn_consent: boolean
           duration_hours: number
           total_price_kopecks: number
+          addon_kopecks?: number
+          discount_kopecks?: number
+          promo_code?: string | null
           status?: BookingStatus
           payment_provider?: string | null
           payment_id?: string | null
@@ -104,6 +111,32 @@ export type Database = {
           created_at?: string
         }
         Update: Partial<Database['public']['Tables']['bookings']['Insert']>
+        Relationships: []
+      }
+      promo_codes: {
+        Row: {
+          id: string
+          code: string
+          discount_type: PromoDiscountType
+          discount_value: number
+          usage_limit: number | null
+          usage_count: number
+          is_active: boolean
+          expires_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          code: string
+          discount_type: PromoDiscountType
+          discount_value: number
+          usage_limit?: number | null
+          usage_count?: number
+          is_active?: boolean
+          expires_at?: string | null
+          created_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['promo_codes']['Insert']>
         Relationships: []
       }
       booking_slots: {
@@ -164,6 +197,9 @@ export type Database = {
           comment: string | null
           duration_hours: number
           total_price_kopecks: number
+          addon_kopecks: number
+          discount_kopecks: number
+          promo_code: string | null
           status: BookingStatus
           payment_provider: string | null
           paid_at: string | null
@@ -204,8 +240,20 @@ export type Database = {
           p_comment: string | null
           p_pdn_consent: boolean
           p_duration_hours: number
+          p_with_addon: boolean
+          p_promo_code: string | null
         }
-        Returns: { booking_id: string; booking_code: string }[]
+        Returns: {
+          booking_id: string
+          booking_code: string
+          total_price_kopecks: number
+          addon_kopecks: number
+          discount_kopecks: number
+        }[]
+      }
+      validate_promo_code: {
+        Args: { p_code: string; p_subtotal_kopecks: number }
+        Returns: { valid: boolean; discount_kopecks: number; message: string }[]
       }
       admin_confirm_payment: {
         Args: { p_booking_id: string }
