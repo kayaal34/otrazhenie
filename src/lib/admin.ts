@@ -42,6 +42,12 @@ export type PromoCodeRow = {
   created_at: string
 }
 
+export type AdminRow = {
+  user_id: string
+  email: string
+  created_at: string
+}
+
 export class AdminError extends Error {}
 
 export async function fetchSlotRange(fromISO: string, toISO: string): Promise<SlotRow[]> {
@@ -106,7 +112,14 @@ export async function deleteSlot(slotId: string): Promise<void> {
     .eq('id', slotId)
     .eq('status', 'available')
 
-  if (error) throw new AdminError(error.message)
+  if (error) {
+    if (error.message.includes('booking_slots_slot_id_fkey')) {
+      throw new AdminError(
+        'Слот нельзя удалить — с ним связана история брони (в том числе отменённой), она должна сохраниться. Слот остаётся доступен для новой брони.',
+      )
+    }
+    throw new AdminError(error.message)
+  }
   if (!count) {
     throw new AdminError('Слот уже забронирован или удержан — сначала снимите бронь.')
   }
@@ -175,4 +188,43 @@ export async function setPromoCodeActive(id: string, isActive: boolean): Promise
 export async function deletePromoCode(id: string): Promise<void> {
   const { error } = await supabase.from('promo_codes').delete().eq('id', id)
   if (error) throw new AdminError(error.message)
+}
+
+export async function fetchAdmins(): Promise<AdminRow[]> {
+  const { data, error } = await supabase.rpc('list_admins')
+  if (error) throw new AdminError(error.message)
+  return data ?? []
+}
+
+export async function inviteAdmin(email: string, redirectTo: string): Promise<void> {
+  const { data, error } = await supabase.functions.invoke<{ ok: boolean; error?: string }>(
+    'admin-invite',
+    { body: { email, redirectTo } },
+  )
+
+  if (error) throw new AdminError('Не удалось связаться с сервером. Попробуйте ещё раз.')
+  if (!data?.ok) throw new AdminError(data?.error ?? 'Не удалось пригласить администратора.')
+}
+
+export async function removeAdmin(userId: string): Promise<void> {
+  const { error } = await supabase.rpc('admin_remove_admin', { p_user_id: userId })
+  if (error) {
+    if (error.message.includes('CANNOT_REMOVE_LAST_ADMIN')) {
+      throw new AdminError('Нельзя удалить последнего администратора.')
+    }
+    throw new AdminError(error.message)
+  }
+}
+
+export async function cleanupOldBookings(olderThanISO: string): Promise<number> {
+  const { data, error } = await supabase.rpc('admin_cleanup_old_bookings', {
+    p_older_than: olderThanISO,
+  })
+  if (error) {
+    if (error.message.includes('CUTOFF_TOO_RECENT')) {
+      throw new AdminError('Можно удалять только записи старше 30 дней.')
+    }
+    throw new AdminError(error.message)
+  }
+  return data ?? 0
 }
