@@ -29,6 +29,7 @@ export function BookingsPanel() {
   const [bookings, setBookings] = useState<BookingDetailRow[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<Filter>('upcoming')
+  const [search, setSearch] = useState('')
   const [cancellingId, setCancellingId] = useState<string | null>(null)
   const [confirmingId, setConfirmingId] = useState<string | null>(null)
 
@@ -50,17 +51,29 @@ export function BookingsPanel() {
 
   const filtered = useMemo(() => {
     const now = Date.now()
-    const byFilter = bookings.filter((b) => {
+    let result = bookings.filter((b) => {
       if (filter === 'all') return true
       const startAt = b.start_at ? new Date(b.start_at).getTime() : 0
       return filter === 'upcoming' ? startAt >= now : startAt < now
     })
+
+    const query = search.trim().toLowerCase()
+    if (query) {
+      result = result.filter(
+        (b) =>
+          b.client_name.toLowerCase().includes(query) ||
+          b.booking_code.toLowerCase().includes(query) ||
+          b.client_phone.toLowerCase().includes(query) ||
+          b.client_email.toLowerCase().includes(query),
+      )
+    }
+
     // Брони, ожидающие оплаты, поднимаем наверх — их нужно замечать первыми
-    return [...byFilter].sort((a, b) => {
+    return [...result].sort((a, b) => {
       const rank = (x: BookingDetailRow) => (x.status === 'pending_payment' ? 0 : 1)
       return rank(a) - rank(b)
     })
-  }, [bookings, filter])
+  }, [bookings, filter, search])
 
   async function handleCancel(booking: BookingDetailRow) {
     setCancellingId(booking.id)
@@ -90,7 +103,15 @@ export function BookingsPanel() {
 
   return (
     <div>
-      <div className="flex gap-2">
+      <input
+        type="text"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Поиск по имени, телефону, email или коду брони…"
+        className="w-full rounded-xl border border-border bg-surface px-3 py-2 font-body text-blue-deep outline-none transition-colors focus:border-blue-primary"
+      />
+
+      <div className="mt-3 flex gap-2">
         {(
           [
             { key: 'upcoming', label: 'Предстоящие' },
@@ -116,7 +137,9 @@ export function BookingsPanel() {
       {loading ? (
         <p className="mt-4 font-body text-sm text-blue-deep/50">Загружаем…</p>
       ) : filtered.length === 0 ? (
-        <p className="mt-4 font-body text-sm text-blue-deep/50">Броней нет.</p>
+        <p className="mt-4 font-body text-sm text-blue-deep/50">
+          {search.trim() ? 'Ничего не найдено по этому запросу.' : 'Броней нет.'}
+        </p>
       ) : (
         <ul className="mt-4 flex flex-col gap-3">
           {filtered.map((b) => (
