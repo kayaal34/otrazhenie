@@ -177,6 +177,12 @@ export async function holdSlots(
   if (error) throw mapRpcError(error.message)
 }
 
+/** Досрочно снимает удержание — вызывается при отмене выбора клиентом. */
+export async function releaseHold(holdToken: string): Promise<void> {
+  const { error } = await supabase.rpc('release_hold', { p_hold_token: holdToken })
+  if (error) throw mapRpcError(error.message)
+}
+
 export type CreateBookingPayload = {
   holdToken: string
   clientName: string
