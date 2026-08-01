@@ -9,6 +9,7 @@ import { usePricingRules } from '../hooks/usePricingRules'
 import {
   groupConsecutiveSlots,
   holdSlots,
+  releaseHold,
   createBooking,
   BookingError,
   type SlotGroup,
@@ -92,6 +93,18 @@ export function BookingPage() {
 
   function handleExpire() {
     toast.error('Время удержания слота истекло. Выберите слот заново.')
+    backToSlots()
+    refetchSlots()
+  }
+
+  async function handleCancelHold() {
+    if (holdToken) {
+      try {
+        await releaseHold(holdToken)
+      } catch {
+        // не критично — если не получилось, слот освободится сам по таймауту
+      }
+    }
     backToSlots()
     refetchSlots()
   }
@@ -223,7 +236,16 @@ export function BookingPage() {
           transition={{ duration: 0.25 }}
           className="mt-8 flex flex-col gap-6"
         >
-          <HoldTimer expiresAt={holdExpiresAt} onExpire={handleExpire} />
+          <div className="flex flex-col items-center gap-2">
+            <HoldTimer expiresAt={holdExpiresAt} onExpire={handleExpire} />
+            <button
+              type="button"
+              onClick={handleCancelHold}
+              className="font-body text-sm text-blue-deep/50 underline decoration-dotted underline-offset-2 hover:text-coral"
+            >
+              Отменить и выбрать другое время
+            </button>
+          </div>
 
           <div className="rounded-xl border border-border bg-surface px-4 py-3 text-center">
             <p className="font-body text-sm text-blue-deep/70">

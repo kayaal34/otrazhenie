@@ -224,6 +224,10 @@ export type Database = {
         }
         Returns: void
       }
+      release_hold: {
+        Args: { p_hold_token: string }
+        Returns: void
+      }
       release_expired_holds: {
         Args: Record<string, never>
         Returns: void
