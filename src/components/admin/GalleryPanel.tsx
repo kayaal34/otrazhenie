@@ -10,11 +10,13 @@ import {
   type GalleryPhoto,
 } from '../../lib/gallery'
 import { PrimaryButton } from '../ui/PrimaryButton'
+import { useConfirm } from './ConfirmDialog'
 
 const inputClass =
   'mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 font-body text-blue-deep outline-none transition-colors focus:border-blue-primary'
 
 export function GalleryPanel() {
+  const confirm = useConfirm()
   const [photos, setPhotos] = useState<GalleryPhoto[]>([])
   const [loading, setLoading] = useState(true)
   const [caption, setCaption] = useState('')
@@ -70,6 +72,14 @@ export function GalleryPanel() {
   }
 
   async function handleDelete(photo: GalleryPhoto) {
+    const ok = await confirm({
+      title: 'Удалить фото?',
+      message: 'Фото будет удалено из галереи и хранилища без возможности восстановления.',
+      confirmLabel: 'Удалить',
+      danger: true,
+    })
+    if (!ok) return
+
     try {
       await deletePhoto(photo)
       setPhotos((prev) => prev.filter((p) => p.id !== photo.id))

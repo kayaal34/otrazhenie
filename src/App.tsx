@@ -13,6 +13,9 @@ const PublicOfferPage = lazy(() =>
   import('./pages/PublicOfferPage').then((m) => ({ default: m.PublicOfferPage })),
 )
 const AdminPage = lazy(() => import('./pages/AdminPage').then((m) => ({ default: m.AdminPage })))
+const AdminSetPasswordPage = lazy(() =>
+  import('./pages/AdminSetPasswordPage').then((m) => ({ default: m.AdminSetPasswordPage })),
+)
 const NotFoundPage = lazy(() =>
   import('./pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
 )
@@ -34,6 +37,7 @@ function App() {
             <Route path="privacy" element={<PrivacyPolicyPage />} />
             <Route path="offer" element={<PublicOfferPage />} />
             <Route path="admin" element={<AdminPage />} />
+            <Route path="admin/set-password" element={<AdminSetPasswordPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>

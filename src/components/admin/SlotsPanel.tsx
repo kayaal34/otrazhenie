@@ -4,6 +4,7 @@ import { fetchSlotRange, createSlotsBulk, deleteSlot, AdminError } from '../../l
 import type { SlotRow } from '../../lib/booking'
 import { formatTimeRange, todayISO } from '../../lib/format'
 import { PrimaryButton } from '../ui/PrimaryButton'
+import { useConfirm } from './ConfirmDialog'
 
 const STATUS_LABEL: Record<SlotRow['status'], string> = {
   available: 'Свободен',
@@ -21,6 +22,7 @@ const inputClass =
   'mt-1 rounded-xl border border-border bg-surface px-3 py-2 font-body text-blue-deep outline-none transition-colors focus:border-blue-primary'
 
 export function SlotsPanel() {
+  const confirm = useConfirm()
   const [viewDate, setViewDate] = useState(todayISO())
   const [slots, setSlots] = useState<SlotRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -65,6 +67,14 @@ export function SlotsPanel() {
   }
 
   async function handleDelete(slot: SlotRow) {
+    const ok = await confirm({
+      title: 'Удалить слот?',
+      message: `Слот ${formatTimeRange(slot.start_time, slot.end_time)} за ${viewDate} исчезнет из календаря бронирования.`,
+      confirmLabel: 'Удалить',
+      danger: true,
+    })
+    if (!ok) return
+
     try {
       await deleteSlot(slot.id)
       setSlots((prev) => prev.filter((s) => s.id !== slot.id))

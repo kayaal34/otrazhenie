@@ -11,6 +11,7 @@ import {
 import type { PromoDiscountType } from '../../types/database'
 import { formatRub } from '../../lib/format'
 import { PrimaryButton } from '../ui/PrimaryButton'
+import { useConfirm } from './ConfirmDialog'
 
 const inputClass =
   'mt-1 rounded-xl border border-border bg-surface px-3 py-2 font-body text-blue-deep outline-none transition-colors focus:border-blue-primary'
@@ -25,6 +26,7 @@ function formatExpiry(expiresAt: string | null): string {
 }
 
 export function PromoCodesPanel() {
+  const confirm = useConfirm()
   const [codes, setCodes] = useState<PromoCodeRow[]>([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
@@ -97,6 +99,14 @@ export function PromoCodesPanel() {
   }
 
   async function handleDelete(row: PromoCodeRow) {
+    const ok = await confirm({
+      title: 'Удалить промокод?',
+      message: `Промокод ${row.code} перестанет работать. Использовать его повторно будет нельзя.`,
+      confirmLabel: 'Удалить',
+      danger: true,
+    })
+    if (!ok) return
+
     try {
       await deletePromoCode(row.id)
       setCodes((prev) => prev.filter((c) => c.id !== row.id))

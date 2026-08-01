@@ -275,6 +275,18 @@ export type Database = {
         Args: { p_booking_id: string }
         Returns: void
       }
+      list_admins: {
+        Args: Record<string, never>
+        Returns: { user_id: string; email: string; created_at: string }[]
+      }
+      admin_remove_admin: {
+        Args: { p_user_id: string }
+        Returns: void
+      }
+      admin_cleanup_old_bookings: {
+        Args: { p_older_than: string }
+        Returns: number
+      }
     }
     Enums: Record<string, never>
   }

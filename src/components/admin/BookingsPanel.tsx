@@ -4,10 +4,15 @@ import {
   fetchBookingDetails,
   cancelBooking,
   confirmPayment,
+  cleanupOldBookings,
   AdminError,
   type BookingDetailRow,
 } from '../../lib/admin'
-import { formatDateFull, formatRub, formatTimeRange } from '../../lib/format'
+import { formatDateFull, formatRub, formatTimeRange, addDaysISO, todayISO } from '../../lib/format'
+import { useConfirm } from './ConfirmDialog'
+
+const inputClass =
+  'rounded-xl border border-border bg-surface px-3 py-2 font-body text-blue-deep outline-none transition-colors focus:border-blue-primary'
 
 type Filter = 'upcoming' | 'past' | 'all'
 
@@ -26,12 +31,15 @@ const STATUS_CLASS: Record<BookingDetailRow['status'], string> = {
 }
 
 export function BookingsPanel() {
+  const confirmDialog = useConfirm()
   const [bookings, setBookings] = useState<BookingDetailRow[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<Filter>('upcoming')
   const [search, setSearch] = useState('')
   const [cancellingId, setCancellingId] = useState<string | null>(null)
   const [confirmingId, setConfirmingId] = useState<string | null>(null)
+  const [cleanupDate, setCleanupDate] = useState(() => addDaysISO(todayISO(), -30))
+  const [cleaningUp, setCleaningUp] = useState(false)
 
   async function load() {
     setLoading(true)
@@ -76,6 +84,14 @@ export function BookingsPanel() {
   }, [bookings, filter, search])
 
   async function handleCancel(booking: BookingDetailRow) {
+    const ok = await confirmDialog({
+      title: 'Отменить бронь?',
+      message: `Бронь ${booking.booking_code} (${booking.client_name}) будет отменена, а слот освободится. Действие необратимо.`,
+      confirmLabel: 'Отменить бронь',
+      danger: true,
+    })
+    if (!ok) return
+
     setCancellingId(booking.id)
     try {
       await cancelBooking(booking.id)
@@ -85,6 +101,27 @@ export function BookingsPanel() {
       toast.error(err instanceof AdminError ? err.message : 'Не удалось отменить бронь')
     } finally {
       setCancellingId(null)
+    }
+  }
+
+  async function handleCleanup() {
+    const ok = await confirmDialog({
+      title: 'Удалить старые отменённые брони?',
+      message: `Будут безвозвратно удалены ВСЕ отменённые брони, оформленные до ${formatDateFull(cleanupDate)}. Подтверждённые и ожидающие оплаты брони не затрагиваются. Действие необратимо.`,
+      confirmLabel: 'Удалить',
+      danger: true,
+    })
+    if (!ok) return
+
+    setCleaningUp(true)
+    try {
+      const count = await cleanupOldBookings(cleanupDate)
+      toast.success(count > 0 ? `Удалено броней: ${count}` : 'Нечего удалять — подходящих броней не найдено')
+      if (count > 0) await load()
+    } catch (err) {
+      toast.error(err instanceof AdminError ? err.message : 'Не удалось выполнить очистку')
+    } finally {
+      setCleaningUp(false)
     }
   }
 
@@ -216,6 +253,33 @@ export function BookingsPanel() {
           ))}
         </ul>
       )}
+
+      <section className="mt-10 rounded-xl border border-coral/30 bg-coral/5 p-4">
+        <h2 className="font-display text-sm font-semibold text-blue-deep">
+          Очистка старых броней
+        </h2>
+        <p className="mt-1 font-body text-xs text-blue-deep/60">
+          Удаляет только отменённые брони старше выбранной даты. Подтверждённые и ожидающие
+          оплаты брони не затрагиваются. Дата не может быть новее, чем 30 дней назад.
+        </p>
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <input
+            type="date"
+            value={cleanupDate}
+            max={addDaysISO(todayISO(), -30)}
+            onChange={(e) => setCleanupDate(e.target.value)}
+            className={inputClass}
+          />
+          <button
+            type="button"
+            disabled={cleaningUp}
+            onClick={handleCleanup}
+            className="rounded-full bg-coral px-4 py-2 font-body text-sm font-medium text-white transition-colors hover:bg-coral/90 disabled:opacity-50"
+          >
+            {cleaningUp ? 'Удаляем…' : 'Удалить отменённые брони'}
+          </button>
+        </div>
+      </section>
     </div>
   )
 }
