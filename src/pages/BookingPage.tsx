@@ -10,6 +10,7 @@ import {
   groupConsecutiveSlots,
   holdSlots,
   releaseHold,
+  releaseHoldBeacon,
   createBooking,
   BookingError,
   type SlotGroup,
@@ -62,6 +63,17 @@ export function BookingPage() {
       setDuration(rules[0].duration_hours)
     }
   }, [rules, duration, setDuration])
+
+  // Если клиент закрывает вкладку или уходит со страницы, не дожидаясь
+  // оплаты, — освобождаем удержанный слот немедленно, а не через 15 минут.
+  useEffect(() => {
+    if (!holdToken) return
+    function handlePageHide() {
+      releaseHoldBeacon(holdToken!)
+    }
+    window.addEventListener('pagehide', handlePageHide)
+    return () => window.removeEventListener('pagehide', handlePageHide)
+  }, [holdToken])
 
   const groups = useMemo(() => groupConsecutiveSlots(daySlots, duration), [daySlots, duration])
 

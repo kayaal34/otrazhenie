@@ -2,6 +2,10 @@ import { Link } from 'react-router-dom'
 import { ApertureIntro } from '../components/ApertureIntro'
 import { PrimaryLink } from '../components/ui/PrimaryLink'
 import { Reveal } from '../components/Reveal'
+import { Accordion } from '../components/Accordion'
+import { usePricingRules } from '../hooks/usePricingRules'
+import { formatRub } from '../lib/format'
+import { FAQ_ITEMS } from '../lib/faqContent'
 
 const steps = [
   {
@@ -18,7 +22,33 @@ const steps = [
   },
 ]
 
+const advantages = [
+  {
+    title: 'Без фотографа и без чужих глаз',
+    text: 'Ты полностью одна(один) в кадре — никто не наблюдает, не подсказывает позы, не торопит. Многим именно это позволяет расслабиться и получить честный, естественный кадр.',
+  },
+  {
+    title: 'Быстро и без ожидания',
+    text: 'Бронируешь удобное время онлайн, приходишь — и уходишь с результатом в тот же день, без недель ожидания ретуши.',
+  },
+  {
+    title: 'Полный контроль над процессом',
+    text: 'Ты сама решаешь, когда нажать на пульт — сколько кадров сделать, в какой позе, с каким выражением. Не нужно подстраиваться под чужое видение кадра.',
+  },
+  {
+    title: 'Гибкий выбор фона и реквизита',
+    text: 'Несколько вариантов фона на выбор — под настроение или повод съёмки.',
+  },
+  {
+    title: 'Подарок для другого человека',
+    text: 'Если не знаешь, что подарить — сертификат на студию решает эту проблему за пару кликов.',
+  },
+]
+
 export function HomePage() {
+  const { rules, loading: rulesLoading } = usePricingRules()
+  const cheapestRule = rules[0]
+
   return (
     <>
       {/* Hero */}
@@ -38,7 +68,11 @@ export function HomePage() {
 
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
           <PrimaryLink to="/booking">Забронировать время</PrimaryLink>
-          <span className="font-mono text-lg text-blue-deep">3 100 ₽ / час</span>
+          {!rulesLoading && cheapestRule && (
+            <span className="font-mono text-lg text-blue-deep">
+              от {formatRub(cheapestRule.price_kopecks)}
+            </span>
+          )}
         </div>
       </section>
 
@@ -69,6 +103,26 @@ export function HomePage() {
         </Reveal>
       </section>
 
+      {/* Преимущества студии */}
+      <section className="px-4 py-16 sm:px-6">
+        <Reveal className="mx-auto max-w-5xl">
+          <h2 className="text-center font-display text-2xl font-semibold text-blue-deep sm:text-3xl">
+            Почему «Отражение»
+          </h2>
+
+          <div className="mt-10 grid gap-4 sm:grid-cols-2">
+            {advantages.map((item) => (
+              <div key={item.title} className="rounded-2xl border border-border bg-surface p-6">
+                <h3 className="font-display text-base font-semibold text-blue-deep">
+                  {item.title}
+                </h3>
+                <p className="mt-2 font-body text-sm text-blue-deep/70">{item.text}</p>
+              </div>
+            ))}
+          </div>
+        </Reveal>
+      </section>
+
       {/* Цена и длительность */}
       <section className="px-4 py-16 sm:px-6">
         <Reveal className="mx-auto max-w-2xl text-center">
@@ -76,19 +130,32 @@ export function HomePage() {
             Сколько времени тебе нужно?
           </h2>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl border border-border bg-surface p-6">
-              <p className="font-body text-sm text-blue-deep/70">1 час</p>
-              <p className="mt-1 font-mono text-2xl font-semibold text-blue-deep">3 100 ₽</p>
+          {rulesLoading ? (
+            <p className="mt-8 font-body text-sm text-blue-deep/50">Загружаем тарифы…</p>
+          ) : (
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
+              {rules.map((rule, i) => (
+                <div
+                  key={rule.duration_hours}
+                  className={
+                    rules.length > 1 && i === 1
+                      ? 'relative rounded-2xl border-2 border-blue-primary bg-surface p-6'
+                      : 'rounded-2xl border border-border bg-surface p-6'
+                  }
+                >
+                  {rules.length > 1 && i === 1 && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-coral px-3 py-1 font-body text-xs font-medium text-white">
+                      популярный выбор
+                    </span>
+                  )}
+                  <p className="font-body text-sm text-blue-deep/70">{rule.label}</p>
+                  <p className="mt-1 font-mono text-2xl font-semibold text-blue-deep">
+                    {formatRub(rule.price_kopecks)}
+                  </p>
+                </div>
+              ))}
             </div>
-            <div className="relative rounded-2xl border-2 border-blue-primary bg-surface p-6">
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-coral px-3 py-1 font-body text-xs font-medium text-white">
-                популярный выбор
-              </span>
-              <p className="font-body text-sm text-blue-deep/70">2 часа</p>
-              <p className="mt-1 font-mono text-2xl font-semibold text-blue-deep">5 800 ₽</p>
-            </div>
-          </div>
+          )}
 
           <div className="mt-8 flex justify-center">
             <PrimaryLink to="/booking">Выбрать и забронировать</PrimaryLink>
@@ -106,6 +173,18 @@ export function HomePage() {
             Твой кот, пёс или кто угодно ещё — тоже часть твоего кадра. Просто отметь это при
             бронировании.
           </p>
+        </Reveal>
+      </section>
+
+      {/* FAQ */}
+      <section className="border-t border-border bg-surface px-4 py-16 sm:px-6">
+        <Reveal className="mx-auto max-w-2xl">
+          <h2 className="text-center font-display text-2xl font-semibold text-blue-deep sm:text-3xl">
+            Частые вопросы
+          </h2>
+          <div className="mt-8">
+            <Accordion items={FAQ_ITEMS} />
+          </div>
         </Reveal>
       </section>
 

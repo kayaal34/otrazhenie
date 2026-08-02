@@ -36,6 +36,33 @@ export function AboutPage() {
       </section>
 
       <section className="border-t border-border bg-surface px-4 py-16 sm:px-6">
+        <Reveal className="mx-auto max-w-3xl">
+          <p className="text-center font-body text-base leading-relaxed text-blue-deep/80 sm:text-lg">
+            «Отражение» — это то, что не льстит и не обманывает. Оно просто показывает тебя таким,
+            какой ты есть сейчас, в этот конкретный момент. Мы сделали большое пространство (более
+            60 кв.м.), в которое можно прийти одному, вдвоём, компанией друзей — и даже с
+            четвероногим другом и даже не одним. Никто не командует «улыбнись» и не подсказывает
+            позу. Ты сам решаешь, каким получится этот момент. Не нужен опыт перед камерой и
+            специальная подготовка — зеркало и пульт устроены так, что справится каждый с первого
+            раза.
+          </p>
+
+          {/* Место для фото студии — добавить реальные снимки помещения,
+              когда они будут готовы. */}
+          <div className="mt-8 grid gap-4 sm:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="flex aspect-square items-center justify-center rounded-2xl border-2 border-dashed border-border font-body text-xs text-blue-deep/30"
+              >
+                Фото скоро
+              </div>
+            ))}
+          </div>
+        </Reveal>
+      </section>
+
+      <section className="px-4 py-16 sm:px-6">
         <Reveal className="mx-auto max-w-5xl">
           <h2 className="text-center font-display text-2xl font-semibold text-blue-deep sm:text-3xl">
             Как это работает

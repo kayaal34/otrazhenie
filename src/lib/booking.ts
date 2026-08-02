@@ -1,4 +1,4 @@
-import { supabase } from './supabase'
+import { supabase, supabaseUrl, supabaseAnonKey } from './supabase'
 import { addDaysISO, todayISO } from './format'
 
 export type SlotRow = {
@@ -192,6 +192,26 @@ export async function holdSlots(
 export async function releaseHold(holdToken: string): Promise<void> {
   const { error } = await supabase.rpc('release_hold', { p_hold_token: holdToken })
   if (error) throw mapRpcError(error.message)
+}
+
+/**
+ * То же самое, что releaseHold(), но «выстрелил и забыл» — раз браузер
+ * закрывает вкладку прямо сейчас, ждать ответ и обрабатывать ошибки уже
+ * бессмысленно. Используется в обработчике pagehide, где обычный
+ * supabase.rpc (await fetch без keepalive) браузер может оборвать раньше,
+ * чем запрос уйдёт на сервер.
+ */
+export function releaseHoldBeacon(holdToken: string): void {
+  fetch(`${supabaseUrl}/rest/v1/rpc/release_hold`, {
+    method: 'POST',
+    keepalive: true,
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: supabaseAnonKey,
+      Authorization: `Bearer ${supabaseAnonKey}`,
+    },
+    body: JSON.stringify({ p_hold_token: holdToken }),
+  }).catch(() => {})
 }
 
 export type CreateBookingPayload = {
