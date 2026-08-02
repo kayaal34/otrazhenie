@@ -15,7 +15,7 @@ import { useConfirm } from './ConfirmDialog'
 const inputClass =
   'mt-1 rounded-xl border border-border bg-surface px-3 py-2 font-body text-blue-deep outline-none transition-colors focus:border-blue-primary'
 
-type EditState = { name: string; sortOrder: string }
+type EditState = { name: string; priceRub: string; sortOrder: string }
 
 export function BackgroundsPanel() {
   const confirm = useConfirm()
@@ -25,6 +25,7 @@ export function BackgroundsPanel() {
   const [savingId, setSavingId] = useState<string | null>(null)
 
   const [name, setName] = useState('')
+  const [priceRub, setPriceRub] = useState('0')
   const [sortOrder, setSortOrder] = useState('0')
 
   const [edits, setEdits] = useState<Record<string, EditState>>({})
@@ -36,7 +37,14 @@ export function BackgroundsPanel() {
       setBackgrounds(data)
       setEdits(
         Object.fromEntries(
-          data.map((b) => [b.id, { name: b.name, sortOrder: String(b.sort_order) }]),
+          data.map((b) => [
+            b.id,
+            {
+              name: b.name,
+              priceRub: String(b.price_kopecks / 100),
+              sortOrder: String(b.sort_order),
+            },
+          ]),
         ),
       )
     } catch (err) {
@@ -60,9 +68,14 @@ export function BackgroundsPanel() {
 
     setCreating(true)
     try {
-      await createBackground({ name: name.trim(), sortOrder: Number(sortOrder) || 0 })
+      await createBackground({
+        name: name.trim(),
+        priceKopecks: Math.round((Number(priceRub) || 0) * 100),
+        sortOrder: Number(sortOrder) || 0,
+      })
       toast.success(`Фон «${name.trim()}» добавлен`)
       setName('')
+      setPriceRub('0')
       setSortOrder('0')
       await load()
     } catch (err) {
@@ -83,6 +96,7 @@ export function BackgroundsPanel() {
     try {
       await updateBackground(bg.id, {
         name: edit.name.trim(),
+        priceKopecks: Math.round((Number(edit.priceRub) || 0) * 100),
         sortOrder: Number(edit.sortOrder) || 0,
       })
       toast.success('Фон обновлён')
@@ -141,6 +155,18 @@ export function BackgroundsPanel() {
           </label>
 
           <label className="flex flex-col font-body text-sm text-blue-deep">
+            Цена, ₽
+            <input
+              type="number"
+              min={0}
+              value={priceRub}
+              onChange={(e) => setPriceRub(e.target.value)}
+              placeholder="0 — бесплатно"
+              className={inputClass}
+            />
+          </label>
+
+          <label className="flex flex-col font-body text-sm text-blue-deep">
             Порядок
             <input
               type="number"
@@ -150,7 +176,7 @@ export function BackgroundsPanel() {
             />
           </label>
 
-          <div className="flex items-end">
+          <div className="flex items-end sm:col-span-4">
             <PrimaryButton type="submit" size="sm" disabled={creating}>
               {creating ? 'Добавляем…' : 'Добавить фон'}
             </PrimaryButton>
@@ -169,7 +195,11 @@ export function BackgroundsPanel() {
         ) : (
           <ul className="mt-3 flex flex-col gap-2">
             {backgrounds.map((bg) => {
-              const edit = edits[bg.id] ?? { name: bg.name, sortOrder: String(bg.sort_order) }
+              const edit = edits[bg.id] ?? {
+                name: bg.name,
+                priceRub: String(bg.price_kopecks / 100),
+                sortOrder: String(bg.sort_order),
+              }
               return (
                 <li
                   key={bg.id}
@@ -187,6 +217,22 @@ export function BackgroundsPanel() {
                         }))
                       }
                       className={`${inputClass} w-40`}
+                    />
+                  </label>
+
+                  <label className="flex flex-col font-body text-xs text-blue-deep/70">
+                    Цена, ₽
+                    <input
+                      type="number"
+                      min={0}
+                      value={edit.priceRub}
+                      onChange={(e) =>
+                        setEdits((prev) => ({
+                          ...prev,
+                          [bg.id]: { ...edit, priceRub: e.target.value },
+                        }))
+                      }
+                      className={`${inputClass} w-24`}
                     />
                   </label>
 

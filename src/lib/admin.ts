@@ -15,6 +15,7 @@ export type BookingDetailRow = {
   duration_hours: number
   total_price_kopecks: number
   addon_kopecks: number
+  background_kopecks: number
   discount_kopecks: number
   promo_code: string | null
   status: 'pending_payment' | 'confirmed' | 'cancelled' | 'completed'
@@ -23,6 +24,7 @@ export type BookingDetailRow = {
   cancelled_at: string | null
   refund_kopecks: number | null
   created_at: string
+  deleted_at: string | null
   background_name: string | null
   slot_date: string | null
   start_time: string | null
@@ -39,12 +41,6 @@ export type PromoCodeRow = {
   usage_count: number
   is_active: boolean
   expires_at: string | null
-  created_at: string
-}
-
-export type AdminRow = {
-  user_id: string
-  email: string
   created_at: string
 }
 
@@ -129,7 +125,19 @@ export async function fetchBookingDetails(): Promise<BookingDetailRow[]> {
   const { data, error } = await supabase
     .from('booking_details')
     .select('*')
+    .is('deleted_at', null)
     .order('start_at', { ascending: false })
+
+  if (error) throw new AdminError(error.message)
+  return data ?? []
+}
+
+export async function fetchTrashedBookings(): Promise<BookingDetailRow[]> {
+  const { data, error } = await supabase
+    .from('booking_details')
+    .select('*')
+    .not('deleted_at', 'is', null)
+    .order('deleted_at', { ascending: false })
 
   if (error) throw new AdminError(error.message)
   return data ?? []
@@ -143,6 +151,34 @@ export async function cancelBooking(bookingId: string): Promise<void> {
 export async function confirmPayment(bookingId: string): Promise<void> {
   const { error } = await supabase.rpc('admin_confirm_payment', { p_booking_id: bookingId })
   if (error) throw new AdminError(error.message)
+}
+
+/** Поштучное удаление брони — не стирает запись, а перемещает в «Корзину». */
+export async function trashBooking(bookingId: string): Promise<void> {
+  const { error } = await supabase
+    .from('bookings')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', bookingId)
+
+  if (error) throw new AdminError(error.message)
+}
+
+export async function restoreBooking(bookingId: string): Promise<void> {
+  const { error } = await supabase.from('bookings').update({ deleted_at: null }).eq('id', bookingId)
+  if (error) throw new AdminError(error.message)
+}
+
+/** Безвозвратное удаление одной брони из «Корзины». */
+export async function permanentlyDeleteBooking(bookingId: string): Promise<void> {
+  const { error } = await supabase.from('bookings').delete().eq('id', bookingId)
+  if (error) throw new AdminError(error.message)
+}
+
+/** Безвозвратно стирает ВСЕ брони, лежащие в «Корзине». */
+export async function emptyTrash(): Promise<number> {
+  const { data, error } = await supabase.rpc('admin_empty_trash')
+  if (error) throw new AdminError(error.message)
+  return data ?? 0
 }
 
 export async function fetchPromoCodes(): Promise<PromoCodeRow[]> {
@@ -190,42 +226,12 @@ export async function deletePromoCode(id: string): Promise<void> {
   if (error) throw new AdminError(error.message)
 }
 
-export async function fetchAdmins(): Promise<AdminRow[]> {
-  const { data, error } = await supabase.rpc('list_admins')
-  if (error) throw new AdminError(error.message)
-  return data ?? []
-}
-
-export async function inviteAdmin(email: string, redirectTo: string): Promise<void> {
-  const { data, error } = await supabase.functions.invoke<{ ok: boolean; error?: string }>(
-    'admin-invite',
-    { body: { email, redirectTo } },
-  )
-
-  if (error) throw new AdminError('Не удалось связаться с сервером. Попробуйте ещё раз.')
-  if (!data?.ok) throw new AdminError(data?.error ?? 'Не удалось пригласить администратора.')
-}
-
-export async function removeAdmin(userId: string): Promise<void> {
-  const { error } = await supabase.rpc('admin_remove_admin', { p_user_id: userId })
-  if (error) {
-    if (error.message.includes('CANNOT_REMOVE_LAST_ADMIN')) {
-      throw new AdminError('Нельзя удалить последнего администратора.')
-    }
-    throw new AdminError(error.message)
-  }
-}
-
-export async function cleanupOldBookings(olderThanISO: string): Promise<number> {
+/** Массово перемещает в «Корзину» все брони старше указанной даты — без ограничения по давности и по статусу. */
+export async function bulkTrashBookingsBefore(olderThanISO: string): Promise<number> {
   const { data, error } = await supabase.rpc('admin_cleanup_old_bookings', {
     p_older_than: olderThanISO,
   })
-  if (error) {
-    if (error.message.includes('CUTOFF_TOO_RECENT')) {
-      throw new AdminError('Можно удалять только записи старше 30 дней.')
-    }
-    throw new AdminError(error.message)
-  }
+  if (error) throw new AdminError(error.message)
   return data ?? 0
 }
 
@@ -308,24 +314,27 @@ export async function fetchAllBackgroundsAdmin(): Promise<BackgroundRow[]> {
 
 export type NewBackground = {
   name: string
+  priceKopecks: number
   sortOrder: number
 }
 
 export async function createBackground(input: NewBackground): Promise<void> {
-  const { error } = await supabase
-    .from('backgrounds')
-    .insert({ name: input.name, sort_order: input.sortOrder })
+  const { error } = await supabase.from('backgrounds').insert({
+    name: input.name,
+    price_kopecks: input.priceKopecks,
+    sort_order: input.sortOrder,
+  })
 
   if (error) throw new AdminError(error.message)
 }
 
 export async function updateBackground(
   id: string,
-  input: { name: string; sortOrder: number },
+  input: { name: string; priceKopecks: number; sortOrder: number },
 ): Promise<void> {
   const { error } = await supabase
     .from('backgrounds')
-    .update({ name: input.name, sort_order: input.sortOrder })
+    .update({ name: input.name, price_kopecks: input.priceKopecks, sort_order: input.sortOrder })
     .eq('id', id)
 
   if (error) throw new AdminError(error.message)

@@ -84,7 +84,7 @@ function buildHtml(b: BookingDetail): string {
   `
 }
 
-async function sendEmail(to: string, html: string): Promise<void> {
+async function sendEmail(to: string, html: string): Promise<Record<string, unknown>> {
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
@@ -98,9 +98,11 @@ async function sendEmail(to: string, html: string): Promise<void> {
       html,
     }),
   })
+  const body = await res.json().catch(() => ({}))
   if (!res.ok) {
-    throw new Error(`Resend API ${res.status}: ${await res.text()}`)
+    throw new Error(`Resend API ${res.status}: ${JSON.stringify(body)}`)
   }
+  return body
 }
 
 Deno.serve(async (req) => {
@@ -131,8 +133,8 @@ Deno.serve(async (req) => {
   }
 
   try {
-    await sendEmail(booking.client_email, buildHtml(booking as BookingDetail))
-    return new Response(JSON.stringify({ ok: true }), { status: 200 })
+    const resendResponse = await sendEmail(booking.client_email, buildHtml(booking as BookingDetail))
+    return new Response(JSON.stringify({ ok: true, resend: resendResponse }), { status: 200 })
   } catch (err) {
     console.error(err)
     return new Response(JSON.stringify({ ok: false, error: String(err) }), { status: 200 })

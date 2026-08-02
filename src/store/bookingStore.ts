@@ -12,6 +12,7 @@ export type ConfirmedSummary = {
   priceKopecks: number
   basePriceKopecks: number
   addonKopecks: number
+  backgroundKopecks: number
   discountKopecks: number
   promoCode: string | null
 }

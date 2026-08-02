@@ -9,6 +9,7 @@ export type Database = {
         Row: {
           id: string
           name: string
+          price_kopecks: number
           is_active: boolean
           sort_order: number
           created_at: string
@@ -16,6 +17,7 @@ export type Database = {
         Insert: {
           id?: string
           name: string
+          price_kopecks?: number
           is_active?: boolean
           sort_order?: number
           created_at?: string
@@ -76,6 +78,7 @@ export type Database = {
           duration_hours: number
           total_price_kopecks: number
           addon_kopecks: number
+          background_kopecks: number
           discount_kopecks: number
           promo_code: string | null
           status: BookingStatus
@@ -85,6 +88,7 @@ export type Database = {
           cancelled_at: string | null
           refund_kopecks: number | null
           created_at: string
+          deleted_at: string | null
         }
         Insert: {
           id?: string
@@ -100,6 +104,7 @@ export type Database = {
           duration_hours: number
           total_price_kopecks: number
           addon_kopecks?: number
+          background_kopecks?: number
           discount_kopecks?: number
           promo_code?: string | null
           status?: BookingStatus
@@ -109,6 +114,7 @@ export type Database = {
           cancelled_at?: string | null
           refund_kopecks?: number | null
           created_at?: string
+          deleted_at?: string | null
         }
         Update: Partial<Database['public']['Tables']['bookings']['Insert']>
         Relationships: []
@@ -198,6 +204,7 @@ export type Database = {
           duration_hours: number
           total_price_kopecks: number
           addon_kopecks: number
+          background_kopecks: number
           discount_kopecks: number
           promo_code: string | null
           status: BookingStatus
@@ -206,6 +213,7 @@ export type Database = {
           cancelled_at: string | null
           refund_kopecks: number | null
           created_at: string
+          deleted_at: string | null
           background_name: string | null
           slot_date: string | null
           start_time: string | null
@@ -252,6 +260,7 @@ export type Database = {
           booking_code: string
           total_price_kopecks: number
           addon_kopecks: number
+          background_kopecks: number
           discount_kopecks: number
         }[]
       }
@@ -275,16 +284,12 @@ export type Database = {
         Args: { p_booking_id: string }
         Returns: void
       }
-      list_admins: {
-        Args: Record<string, never>
-        Returns: { user_id: string; email: string; created_at: string }[]
-      }
-      admin_remove_admin: {
-        Args: { p_user_id: string }
-        Returns: void
-      }
       admin_cleanup_old_bookings: {
         Args: { p_older_than: string }
+        Returns: number
+      }
+      admin_empty_trash: {
+        Args: Record<string, never>
         Returns: number
       }
     }

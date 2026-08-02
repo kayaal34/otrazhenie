@@ -49,7 +49,10 @@ export function BookingForm({ backgrounds, priceKopecks, submitting, onSubmit }:
   })
 
   const withAddon = watch('withAddon')
-  const subtotalKopecks = priceKopecks + (withAddon ? ADDON_PRICE_KOPECKS : 0)
+  const selectedBackgroundId = watch('backgroundId')
+  const selectedBackground = backgrounds.find((bg) => bg.id === selectedBackgroundId)
+  const backgroundKopecks = selectedBackground?.price_kopecks ?? 0
+  const subtotalKopecks = priceKopecks + (withAddon ? ADDON_PRICE_KOPECKS : 0) + backgroundKopecks
 
   const [promoInput, setPromoInput] = useState('')
   const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null)
@@ -264,12 +267,18 @@ export function BookingForm({ backgrounds, priceKopecks, submitting, onSubmit }:
         {errors.pdnConsent && <p className={errClass}>{errors.pdnConsent.message}</p>}
       </div>
 
-      {(withAddon || appliedPromo) && (
+      {(withAddon || backgroundKopecks > 0 || appliedPromo) && (
         <div className="flex flex-col gap-1 rounded-xl border border-border bg-surface px-4 py-3 font-body text-sm">
           <div className="flex justify-between text-blue-deep/70">
             <span>Съёмка</span>
             <span className="font-mono">{formatRub(priceKopecks)}</span>
           </div>
+          {backgroundKopecks > 0 && (
+            <div className="flex justify-between text-blue-deep/70">
+              <span>Фон «{selectedBackground?.name}»</span>
+              <span className="font-mono">+{formatRub(backgroundKopecks)}</span>
+            </div>
+          )}
           {withAddon && (
             <div className="flex justify-between text-blue-deep/70">
               <span>{ADDON_LABEL}</span>

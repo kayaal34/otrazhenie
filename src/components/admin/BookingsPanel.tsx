@@ -4,7 +4,8 @@ import {
   fetchBookingDetails,
   cancelBooking,
   confirmPayment,
-  cleanupOldBookings,
+  trashBooking,
+  bulkTrashBookingsBefore,
   AdminError,
   type BookingDetailRow,
 } from '../../lib/admin'
@@ -45,6 +46,7 @@ export function BookingsPanel() {
   const [search, setSearch] = useState('')
   const [cancellingId, setCancellingId] = useState<string | null>(null)
   const [confirmingId, setConfirmingId] = useState<string | null>(null)
+  const [trashingId, setTrashingId] = useState<string | null>(null)
   const [cleanupDate, setCleanupDate] = useState(() => addDaysISO(todayISO(), -30))
   const [cleaningUp, setCleaningUp] = useState(false)
 
@@ -113,22 +115,45 @@ export function BookingsPanel() {
 
   async function handleCleanup() {
     const ok = await confirmDialog({
-      title: 'Удалить старые отменённые брони?',
-      message: `Будут безвозвратно удалены ВСЕ отменённые брони, оформленные до ${formatDateFull(cleanupDate)}. Подтверждённые и ожидающие оплаты брони не затрагиваются. Действие необратимо.`,
-      confirmLabel: 'Удалить',
+      title: 'Переместить старые брони в корзину?',
+      message: `Все брони (любого статуса), оформленные до ${formatDateFull(cleanupDate)}, будут перемещены в «Корзину». Ничего не удаляется безвозвратно — при необходимости их можно будет восстановить.`,
+      confirmLabel: 'Переместить в корзину',
       danger: true,
     })
     if (!ok) return
 
     setCleaningUp(true)
     try {
-      const count = await cleanupOldBookings(cleanupDate)
-      toast.success(count > 0 ? `Удалено броней: ${count}` : 'Нечего удалять — подходящих броней не найдено')
+      const count = await bulkTrashBookingsBefore(cleanupDate)
+      toast.success(
+        count > 0 ? `В корзину перемещено броней: ${count}` : 'Нечего перемещать — подходящих броней не найдено',
+      )
       if (count > 0) await load()
     } catch (err) {
       toast.error(err instanceof AdminError ? err.message : 'Не удалось выполнить очистку')
     } finally {
       setCleaningUp(false)
+    }
+  }
+
+  async function handleTrash(booking: BookingDetailRow) {
+    const ok = await confirmDialog({
+      title: 'Удалить бронь?',
+      message: `Бронь ${booking.booking_code} (${booking.client_name}) переместится в «Корзину» и пропадёт из этого списка. Слот при этом не освобождается — если нужно освободить время, сначала отмените бронь.`,
+      confirmLabel: 'Удалить',
+      danger: true,
+    })
+    if (!ok) return
+
+    setTrashingId(booking.id)
+    try {
+      await trashBooking(booking.id)
+      setBookings((prev) => prev.filter((b) => b.id !== booking.id))
+      toast.success(`Бронь ${booking.booking_code} перемещена в корзину`)
+    } catch (err) {
+      toast.error(err instanceof AdminError ? err.message : 'Не удалось удалить бронь')
+    } finally {
+      setTrashingId(null)
     }
   }
 
@@ -208,8 +233,9 @@ export function BookingsPanel() {
                 <p className="font-mono">{formatRub(b.total_price_kopecks)}</p>
               </div>
 
-              {(b.addon_kopecks > 0 || b.discount_kopecks > 0) && (
+              {(b.addon_kopecks > 0 || b.background_kopecks > 0 || b.discount_kopecks > 0) && (
                 <p className="mt-1 font-body text-xs text-blue-deep/50">
+                  {b.background_kopecks > 0 && <>Фон: +{formatRub(b.background_kopecks)} </>}
                   {b.addon_kopecks > 0 && <>Доп. фон: +{formatRub(b.addon_kopecks)} </>}
                   {b.discount_kopecks > 0 && (
                     <>
@@ -256,6 +282,15 @@ export function BookingsPanel() {
                       Возврат: {formatRub(b.refund_kopecks)}
                     </span>
                   )}
+
+                  <button
+                    type="button"
+                    disabled={trashingId === b.id}
+                    onClick={() => handleTrash(b)}
+                    className="font-body text-xs text-blue-deep/40 hover:text-coral disabled:opacity-50"
+                  >
+                    {trashingId === b.id ? 'Удаляем…' : 'Удалить'}
+                  </button>
                 </div>
               </div>
             </li>
@@ -265,17 +300,17 @@ export function BookingsPanel() {
 
       <section className="mt-10 rounded-xl border border-coral/30 bg-coral/5 p-4">
         <h2 className="font-display text-sm font-semibold text-blue-deep">
-          Очистка старых броней
+          Массовое перемещение в корзину
         </h2>
         <p className="mt-1 font-body text-xs text-blue-deep/60">
-          Удаляет только отменённые брони старше выбранной даты. Подтверждённые и ожидающие
-          оплаты брони не затрагиваются. Дата не может быть новее, чем 30 дней назад.
+          Перемещает в «Корзину» все брони (любого статуса), оформленные до выбранной даты —
+          без ограничения по давности. Ничего не стирается безвозвратно: удалить записи навсегда
+          можно будет из «Корзины».
         </p>
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <input
             type="date"
             value={cleanupDate}
-            max={addDaysISO(todayISO(), -30)}
             onChange={(e) => setCleanupDate(e.target.value)}
             className={inputClass}
           />
@@ -285,7 +320,7 @@ export function BookingsPanel() {
             onClick={handleCleanup}
             className="rounded-full bg-coral px-4 py-2 font-body text-sm font-medium text-white transition-colors hover:bg-coral/90 disabled:opacity-50"
           >
-            {cleaningUp ? 'Удаляем…' : 'Удалить отменённые брони'}
+            {cleaningUp ? 'Перемещаем…' : 'Переместить в корзину'}
           </button>
         </div>
       </section>
