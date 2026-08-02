@@ -21,6 +21,10 @@ export function formatDateFull(dateISO: string): string {
   return format(parseISO(dateISO), 'd MMMM yyyy', { locale: ru })
 }
 
+export function formatDateTime(isoTimestamp: string): string {
+  return format(parseISO(isoTimestamp), 'd MMMM yyyy, HH:mm', { locale: ru })
+}
+
 export function formatDayShort(dateISO: string): { weekday: string; day: string } {
   const date = parseISO(dateISO)
   return {

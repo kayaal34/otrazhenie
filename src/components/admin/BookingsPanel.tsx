@@ -8,7 +8,14 @@ import {
   AdminError,
   type BookingDetailRow,
 } from '../../lib/admin'
-import { formatDateFull, formatRub, formatTimeRange, addDaysISO, todayISO } from '../../lib/format'
+import {
+  formatDateFull,
+  formatDateTime,
+  formatRub,
+  formatTimeRange,
+  addDaysISO,
+  todayISO,
+} from '../../lib/format'
 import { useConfirm } from './ConfirmDialog'
 
 const inputClass =
@@ -217,7 +224,9 @@ export function BookingsPanel() {
               )}
 
               <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                <span className="font-mono text-xs text-blue-deep/40">{b.booking_code}</span>
+                <span className="font-mono text-xs text-blue-deep/40">
+                  {b.booking_code} · забронировано {formatDateTime(b.created_at)}
+                </span>
 
                 <div className="flex items-center gap-3">
                   {b.status === 'pending_payment' && (
