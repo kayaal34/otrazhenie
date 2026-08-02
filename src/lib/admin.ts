@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 import { addDaysISO } from './format'
-import type { SlotRow } from './booking'
+import type { SlotRow, BackgroundRow, PricingRuleRow } from './booking'
 import type { PromoDiscountType } from '../types/database'
 
 export type BookingDetailRow = {
@@ -227,4 +227,128 @@ export async function cleanupOldBookings(olderThanISO: string): Promise<number> 
     throw new AdminError(error.message)
   }
   return data ?? 0
+}
+
+// -------------------------------------------------------------------------
+// Тарифы (pricing_rules) — длительность + цена бронирования
+// -------------------------------------------------------------------------
+
+export async function fetchAllPricingRules(): Promise<PricingRuleRow[]> {
+  const { data, error } = await supabase
+    .from('pricing_rules')
+    .select('*')
+    .order('duration_hours', { ascending: true })
+
+  if (error) throw new AdminError(error.message)
+  return data ?? []
+}
+
+export type NewPricingRule = {
+  durationHours: number
+  priceKopecks: number
+  label: string
+}
+
+export async function createPricingRule(input: NewPricingRule): Promise<void> {
+  const { error } = await supabase.from('pricing_rules').insert({
+    duration_hours: input.durationHours,
+    price_kopecks: input.priceKopecks,
+    label: input.label,
+  })
+
+  if (error) {
+    if (error.message.includes('duplicate') || error.message.includes('pricing_rules_pkey')) {
+      throw new AdminError('Тариф с такой длительностью уже существует.')
+    }
+    throw new AdminError(error.message)
+  }
+}
+
+export async function updatePricingRule(
+  durationHours: number,
+  input: { priceKopecks: number; label: string },
+): Promise<void> {
+  const { error } = await supabase
+    .from('pricing_rules')
+    .update({ price_kopecks: input.priceKopecks, label: input.label })
+    .eq('duration_hours', durationHours)
+
+  if (error) throw new AdminError(error.message)
+}
+
+export async function deletePricingRule(durationHours: number): Promise<void> {
+  const { error } = await supabase
+    .from('pricing_rules')
+    .delete()
+    .eq('duration_hours', durationHours)
+
+  if (error) {
+    if (error.message.includes('foreign key') || error.message.includes('violates')) {
+      throw new AdminError(
+        'Нельзя удалить тариф — есть брони с такой длительностью в истории.',
+      )
+    }
+    throw new AdminError(error.message)
+  }
+}
+
+// -------------------------------------------------------------------------
+// Фоны (backgrounds)
+// -------------------------------------------------------------------------
+
+export async function fetchAllBackgroundsAdmin(): Promise<BackgroundRow[]> {
+  const { data, error } = await supabase
+    .from('backgrounds')
+    .select('*')
+    .order('sort_order', { ascending: true })
+
+  if (error) throw new AdminError(error.message)
+  return data ?? []
+}
+
+export type NewBackground = {
+  name: string
+  sortOrder: number
+}
+
+export async function createBackground(input: NewBackground): Promise<void> {
+  const { error } = await supabase
+    .from('backgrounds')
+    .insert({ name: input.name, sort_order: input.sortOrder })
+
+  if (error) throw new AdminError(error.message)
+}
+
+export async function updateBackground(
+  id: string,
+  input: { name: string; sortOrder: number },
+): Promise<void> {
+  const { error } = await supabase
+    .from('backgrounds')
+    .update({ name: input.name, sort_order: input.sortOrder })
+    .eq('id', id)
+
+  if (error) throw new AdminError(error.message)
+}
+
+export async function setBackgroundActive(id: string, isActive: boolean): Promise<void> {
+  const { error } = await supabase
+    .from('backgrounds')
+    .update({ is_active: isActive })
+    .eq('id', id)
+
+  if (error) throw new AdminError(error.message)
+}
+
+export async function deleteBackground(id: string): Promise<void> {
+  const { error } = await supabase.from('backgrounds').delete().eq('id', id)
+
+  if (error) {
+    if (error.message.includes('foreign key') || error.message.includes('violates')) {
+      throw new AdminError(
+        'Нельзя удалить фон — есть брони с этим фоном в истории. Можно просто отключить его.',
+      )
+    }
+    throw new AdminError(error.message)
+  }
 }

@@ -14,6 +14,11 @@ export async function signOutAdmin() {
   await supabase.auth.signOut()
 }
 
+export async function requestAdminPasswordReset(email: string, redirectTo: string) {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo })
+  if (error) throw new Error('Не удалось отправить письмо. Попробуйте ещё раз.')
+}
+
 export async function checkIsAdmin(): Promise<boolean> {
   const { data, error } = await supabase.rpc('is_admin')
   if (error) return false

@@ -51,7 +51,7 @@ export function AdminSetPasswordPage() {
         Установите пароль
       </h1>
       <p className="mt-2 text-center font-body text-sm text-blue-deep/70">
-        Вас пригласили администратором студии «Отражение». Придумайте пароль для входа.
+        Придумайте пароль для входа в панель администратора студии «Отражение».
       </p>
 
       <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">

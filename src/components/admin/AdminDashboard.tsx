@@ -6,16 +6,28 @@ import { BookingsPanel } from './BookingsPanel'
 import { StatsPanel } from './StatsPanel'
 import { GalleryPanel } from './GalleryPanel'
 import { PromoCodesPanel } from './PromoCodesPanel'
+import { PricingRulesPanel } from './PricingRulesPanel'
+import { BackgroundsPanel } from './BackgroundsPanel'
 import { AdminsPanel } from './AdminsPanel'
 import { ConfirmProvider } from './ConfirmDialog'
 
-type Tab = 'slots' | 'bookings' | 'gallery' | 'promo' | 'admins' | 'stats'
+type Tab =
+  | 'slots'
+  | 'bookings'
+  | 'gallery'
+  | 'promo'
+  | 'pricing'
+  | 'backgrounds'
+  | 'admins'
+  | 'stats'
 
 const tabs: { key: Tab; label: string }[] = [
   { key: 'slots', label: 'Слоты' },
   { key: 'bookings', label: 'Брони' },
   { key: 'gallery', label: 'Галерея' },
   { key: 'promo', label: 'Промокоды' },
+  { key: 'pricing', label: 'Тарифы' },
+  { key: 'backgrounds', label: 'Фоны' },
   { key: 'admins', label: 'Администраторы' },
   { key: 'stats', label: 'Статистика' },
 ]
@@ -66,6 +78,8 @@ export function AdminDashboard({ session }: AdminDashboardProps) {
           {tab === 'bookings' && <BookingsPanel />}
           {tab === 'gallery' && <GalleryPanel />}
           {tab === 'promo' && <PromoCodesPanel />}
+          {tab === 'pricing' && <PricingRulesPanel />}
+          {tab === 'backgrounds' && <BackgroundsPanel />}
           {tab === 'admins' && <AdminsPanel currentUserId={session.user.id} />}
           {tab === 'stats' && <StatsPanel />}
         </div>
