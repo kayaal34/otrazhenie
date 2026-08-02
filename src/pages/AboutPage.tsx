@@ -66,6 +66,9 @@ export function AboutPage() {
             Твой кот, пёс или кто угодно ещё — тоже часть твоего кадра. Просто отметь это при
             бронировании, и мы подготовим студию заранее.
           </p>
+          <p className="mt-3 font-body text-sm text-blue-deep/60">
+            Обязательное условие: чистые лапы и внимательный присмотр за питомцами.
+          </p>
         </Reveal>
       </section>
 
@@ -104,6 +107,17 @@ export function AboutPage() {
             >
               ВКонтакте
             </a>
+          </div>
+          <div className="mt-6 overflow-hidden rounded-xl border border-border">
+            <iframe
+              src={CONTACT_INFO.mapEmbedUrl}
+              title="Карта — как добраться до студии"
+              width="100%"
+              height="320"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              style={{ border: 0, display: 'block' }}
+            />
           </div>
         </Reveal>
       </section>

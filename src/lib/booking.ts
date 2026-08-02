@@ -36,6 +36,11 @@ function toMinutes(time: string): number {
   return h * 60 + m
 }
 
+/** Слот, чьё время начала уже наступило, — бронировать его больше нельзя. */
+function isSlotPast(slot: SlotRow): boolean {
+  return new Date(`${slot.slot_date}T${slot.start_time}`).getTime() <= Date.now()
+}
+
 export async function fetchDaySlots(dateISO: string): Promise<SlotRow[]> {
   const { data, error } = await supabase
     .from('slots')
@@ -95,14 +100,14 @@ export function groupConsecutiveSlots(daySlots: SlotRow[], durationHours: number
   const groups: SlotGroup[] = []
 
   for (let i = 0; i < sorted.length; i++) {
-    if (sorted[i].status !== 'available') continue
+    if (sorted[i].status !== 'available' || isSlotPast(sorted[i])) continue
 
     const chain: SlotRow[] = [sorted[i]]
     let expectedStart = toMinutes(sorted[i].end_time)
 
     for (let j = i + 1; chain.length < durationHours && j < sorted.length; j++) {
       const candidate = sorted[j]
-      if (candidate.status !== 'available') break
+      if (candidate.status !== 'available' || isSlotPast(candidate)) break
       if (toMinutes(candidate.start_time) !== expectedStart) break
       chain.push(candidate)
       expectedStart = toMinutes(candidate.end_time)
@@ -125,6 +130,12 @@ export class BookingError extends Error {
 }
 
 function mapRpcError(raw: string): BookingError {
+  if (raw.includes('SLOT_ALREADY_STARTED')) {
+    return new BookingError(
+      'SLOT_ALREADY_STARTED',
+      'Это время уже наступило, забронировать его больше нельзя. Выберите другой слот.',
+    )
+  }
   if (raw.includes('SLOT_UNAVAILABLE')) {
     return new BookingError(
       'SLOT_UNAVAILABLE',
