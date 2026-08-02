@@ -13,4 +13,12 @@ if (!supabaseUrl || !supabaseAnonKey) {
 export const supabase = createClient<Database>(
   supabaseUrl || 'https://placeholder.supabase.co',
   supabaseAnonKey || 'placeholder-anon-key',
+  {
+    auth: {
+      // sessionStorage вместо localStorage по умолчанию — сессия админа
+      // живёт, пока открыта вкладка, и пропадает при закрытии вкладки или
+      // браузера, а не сохраняется на устройстве бессрочно.
+      storage: window.sessionStorage,
+    },
+  },
 )

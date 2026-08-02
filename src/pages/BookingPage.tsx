@@ -151,6 +151,7 @@ export function BookingPage() {
         priceKopecks: result.totalPriceKopecks,
         basePriceKopecks: currentRule?.price_kopecks ?? 0,
         addonKopecks: result.addonKopecks,
+        backgroundKopecks: result.backgroundKopecks,
         discountKopecks: result.discountKopecks,
         promoCode: result.discountKopecks > 0 ? promoCode : null,
       })

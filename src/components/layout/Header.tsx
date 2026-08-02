@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
 import { ApertureMark } from '../ApertureMark'
 import { PrimaryLink } from '../ui/PrimaryLink'
+import { useAdminSession } from '../../hooks/useAdminSession'
 
 const links = [
   { to: '/booking', label: 'Бронирование' },
@@ -12,6 +13,8 @@ const links = [
 
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const { session, isAdmin } = useAdminSession()
+  const showAdminLink = Boolean(session && isAdmin)
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-cream/90 backdrop-blur">
@@ -39,6 +42,18 @@ export function Header() {
               {link.label}
             </NavLink>
           ))}
+          {showAdminLink && (
+            <NavLink
+              to="/admin"
+              className={({ isActive }) =>
+                `font-body text-sm transition-colors ${
+                  isActive ? 'text-blue-primary' : 'text-blue-deep/70 hover:text-blue-deep'
+                }`
+              }
+            >
+              Админ-панель
+            </NavLink>
+          )}
         </nav>
 
         <PrimaryLink to="/booking" size="sm" className="hidden sm:inline-flex">
@@ -72,6 +87,19 @@ export function Header() {
               {link.label}
             </NavLink>
           ))}
+          {showAdminLink && (
+            <NavLink
+              to="/admin"
+              onClick={() => setMenuOpen(false)}
+              className={({ isActive }) =>
+                `rounded-lg px-3 py-2 font-body text-sm ${
+                  isActive ? 'bg-blue-primary/10 text-blue-primary' : 'text-blue-deep/80'
+                }`
+              }
+            >
+              Админ-панель
+            </NavLink>
+          )}
         </nav>
       )}
     </header>

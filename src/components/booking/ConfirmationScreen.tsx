@@ -34,12 +34,20 @@ export function ConfirmationScreen({ summary, onBookAnother }: ConfirmationScree
           Переведи {formatRub(summary.priceKopecks)}
         </p>
 
-        {(summary.addonKopecks > 0 || summary.discountKopecks > 0) && (
+        {(summary.addonKopecks > 0 ||
+          summary.backgroundKopecks > 0 ||
+          summary.discountKopecks > 0) && (
           <dl className="mt-3 flex flex-col gap-1 border-b border-amber/30 pb-3 font-body text-sm text-blue-deep/70">
             <div className="flex justify-between">
               <dt>Съёмка</dt>
               <dd className="font-mono">{formatRub(summary.basePriceKopecks)}</dd>
             </div>
+            {summary.backgroundKopecks > 0 && (
+              <div className="flex justify-between">
+                <dt>Фон</dt>
+                <dd className="font-mono">+{formatRub(summary.backgroundKopecks)}</dd>
+              </div>
+            )}
             {summary.addonKopecks > 0 && (
               <div className="flex justify-between">
                 <dt>Дополнительный фон</dt>

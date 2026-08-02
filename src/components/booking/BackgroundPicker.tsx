@@ -1,4 +1,5 @@
 import type { BackgroundRow } from '../../lib/booking'
+import { formatRub } from '../../lib/format'
 
 type BackgroundPickerProps = {
   backgrounds: BackgroundRow[]
@@ -42,6 +43,11 @@ export function BackgroundPicker({ backgrounds, value, onChange }: BackgroundPic
               aria-hidden
             />
             <span className="font-body text-sm text-blue-deep">{bg.name}</span>
+            {bg.price_kopecks > 0 && (
+              <span className="font-mono text-xs text-blue-deep/50">
+                +{formatRub(bg.price_kopecks)}
+              </span>
+            )}
           </button>
         )
       })}

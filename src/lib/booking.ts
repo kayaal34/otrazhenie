@@ -15,6 +15,7 @@ export type SlotRow = {
 export type BackgroundRow = {
   id: string
   name: string
+  price_kopecks: number
   is_active: boolean
   sort_order: number
   created_at: string
@@ -154,6 +155,9 @@ function mapRpcError(raw: string): BookingError {
       'Для этой длительности пока не задана цена. Свяжитесь со студией.',
     )
   }
+  if (raw.includes('BACKGROUND_NOT_FOUND')) {
+    return new BookingError('BACKGROUND_NOT_FOUND', 'Этот фон больше недоступен. Выберите другой.')
+  }
   if (raw.includes('PROMO_NOT_FOUND')) {
     return new BookingError('PROMO_NOT_FOUND', 'Промокод не найден.')
   }
@@ -234,6 +238,7 @@ export type CreateBookingResult = {
   bookingCode: string
   totalPriceKopecks: number
   addonKopecks: number
+  backgroundKopecks: number
   discountKopecks: number
 }
 
@@ -269,6 +274,7 @@ export async function createBooking(
     bookingCode: row.booking_code,
     totalPriceKopecks: row.total_price_kopecks,
     addonKopecks: row.addon_kopecks,
+    backgroundKopecks: row.background_kopecks,
     discountKopecks: row.discount_kopecks,
   }
 }

@@ -8,27 +8,27 @@ import { GalleryPanel } from './GalleryPanel'
 import { PromoCodesPanel } from './PromoCodesPanel'
 import { PricingRulesPanel } from './PricingRulesPanel'
 import { BackgroundsPanel } from './BackgroundsPanel'
-import { AdminsPanel } from './AdminsPanel'
+import { TrashPanel } from './TrashPanel'
 import { ConfirmProvider } from './ConfirmDialog'
 
 type Tab =
   | 'slots'
   | 'bookings'
+  | 'trash'
   | 'gallery'
   | 'promo'
   | 'pricing'
   | 'backgrounds'
-  | 'admins'
   | 'stats'
 
 const tabs: { key: Tab; label: string }[] = [
   { key: 'slots', label: 'Слоты' },
   { key: 'bookings', label: 'Брони' },
+  { key: 'trash', label: 'Корзина' },
   { key: 'gallery', label: 'Галерея' },
   { key: 'promo', label: 'Промокоды' },
   { key: 'pricing', label: 'Тарифы' },
   { key: 'backgrounds', label: 'Фоны' },
-  { key: 'admins', label: 'Администраторы' },
   { key: 'stats', label: 'Статистика' },
 ]
 
@@ -76,11 +76,11 @@ export function AdminDashboard({ session }: AdminDashboardProps) {
         <div className="mt-6">
           {tab === 'slots' && <SlotsPanel />}
           {tab === 'bookings' && <BookingsPanel />}
+          {tab === 'trash' && <TrashPanel />}
           {tab === 'gallery' && <GalleryPanel />}
           {tab === 'promo' && <PromoCodesPanel />}
           {tab === 'pricing' && <PricingRulesPanel />}
           {tab === 'backgrounds' && <BackgroundsPanel />}
-          {tab === 'admins' && <AdminsPanel currentUserId={session.user.id} />}
           {tab === 'stats' && <StatsPanel />}
         </div>
       </div>
