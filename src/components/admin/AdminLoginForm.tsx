@@ -19,7 +19,7 @@ function ForgotPasswordForm({ onBack }: { onBack: () => void }) {
     setFormError(null)
     setSubmitting(true)
     try {
-      await requestAdminPasswordReset(`${window.location.origin}/admin/set-password`)
+      await requestAdminPasswordReset()
       setSent(true)
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Не удалось отправить письмо.')
