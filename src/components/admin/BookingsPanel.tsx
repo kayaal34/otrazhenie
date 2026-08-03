@@ -231,6 +231,11 @@ export function BookingsPanel() {
                 <p>Фон: {b.background_name ?? '—'}</p>
                 <p>Человек: {b.guests_count}{b.with_pet ? ' · с питомцем 🐾' : ''}</p>
                 <p className="font-mono">{formatRub(b.total_price_kopecks)}</p>
+                <p className={b.photo_consent ? 'text-mint' : 'text-blue-deep/40'}>
+                  {b.photo_consent
+                    ? 'Разрешил(а) публикацию фото'
+                    : 'Не разрешил(а) публикацию фото'}
+                </p>
               </div>
 
               {(b.addon_kopecks > 0 || b.background_kopecks > 0 || b.discount_kopecks > 0) && (

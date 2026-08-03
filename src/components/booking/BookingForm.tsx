@@ -45,6 +45,7 @@ export function BookingForm({ backgrounds, priceKopecks, submitting, onSubmit }:
       withAddon: false,
       comment: '',
       pdnConsent: false,
+      photoConsent: false,
     },
   })
 
@@ -266,6 +267,18 @@ export function BookingForm({ backgrounds, priceKopecks, submitting, onSubmit }:
         </label>
         {errors.pdnConsent && <p className={errClass}>{errors.pdnConsent.message}</p>}
       </div>
+
+      <label className="flex items-start gap-2 font-body text-sm text-blue-deep">
+        <input
+          type="checkbox"
+          {...register('photoConsent')}
+          className="mt-1 h-4 w-4 rounded border-border"
+        />
+        <span>
+          Согласен(а) на использование моих кадров (фотографий) на страницах студии и в
+          социальных сетях
+        </span>
+      </label>
 
       {(withAddon || backgroundKopecks > 0 || appliedPromo) && (
         <div className="flex flex-col gap-1 rounded-xl border border-border bg-surface px-4 py-3 font-body text-sm">

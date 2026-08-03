@@ -1,6 +1,7 @@
 export type SlotStatus = 'available' | 'locked' | 'booked'
 export type BookingStatus = 'pending_payment' | 'confirmed' | 'cancelled' | 'completed'
 export type PromoDiscountType = 'percent' | 'fixed'
+export type GiftCertificateStatus = 'pending_payment' | 'confirmed' | 'cancelled'
 
 export type Database = {
   public: {
@@ -89,6 +90,7 @@ export type Database = {
           refund_kopecks: number | null
           created_at: string
           deleted_at: string | null
+          photo_consent: boolean
         }
         Insert: {
           id?: string
@@ -101,6 +103,7 @@ export type Database = {
           with_pet?: boolean
           comment?: string | null
           pdn_consent: boolean
+          photo_consent?: boolean
           duration_hours: number
           total_price_kopecks: number
           addon_kopecks?: number
@@ -177,6 +180,38 @@ export type Database = {
         Update: Partial<Database['public']['Tables']['gallery_photos']['Insert']>
         Relationships: []
       }
+      gift_certificates: {
+        Row: {
+          id: string
+          code: string
+          duration_hours: number
+          price_kopecks: number
+          buyer_name: string
+          buyer_phone: string
+          buyer_email: string
+          status: GiftCertificateStatus
+          payment_provider: string | null
+          paid_at: string | null
+          email_sent_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          code: string
+          duration_hours: number
+          price_kopecks: number
+          buyer_name: string
+          buyer_phone: string
+          buyer_email: string
+          status?: GiftCertificateStatus
+          payment_provider?: string | null
+          paid_at?: string | null
+          email_sent_at?: string | null
+          created_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['gift_certificates']['Insert']>
+        Relationships: []
+      }
       admin_users: {
         Row: {
           user_id: string
@@ -214,6 +249,7 @@ export type Database = {
           refund_kopecks: number | null
           created_at: string
           deleted_at: string | null
+          photo_consent: boolean
           background_name: string | null
           slot_date: string | null
           start_time: string | null
@@ -251,6 +287,7 @@ export type Database = {
           p_with_pet: boolean
           p_comment: string | null
           p_pdn_consent: boolean
+          p_photo_consent: boolean
           p_duration_hours: number
           p_with_addon: boolean
           p_promo_code: string | null
@@ -291,6 +328,53 @@ export type Database = {
       admin_empty_trash: {
         Args: Record<string, never>
         Returns: number
+      }
+      create_gift_certificate: {
+        Args: {
+          p_duration_hours: number
+          p_buyer_name: string
+          p_buyer_phone: string
+          p_buyer_email: string
+        }
+        Returns: { certificate_id: string; code: string; price_kopecks: number }[]
+      }
+      admin_confirm_certificate_payment: {
+        Args: { p_certificate_id: string }
+        Returns: void
+      }
+      admin_resend_certificate_email: {
+        Args: { p_certificate_id: string }
+        Returns: void
+      }
+      find_booking_for_management: {
+        Args: { p_code: string; p_email: string }
+        Returns: {
+          id: string
+          booking_code: string
+          client_name: string
+          status: string
+          duration_hours: number
+          total_price_kopecks: number
+          background_name: string | null
+          slot_date: string | null
+          start_time: string | null
+          end_time: string | null
+          start_at: string | null
+        }[]
+      }
+      client_cancel_booking: {
+        Args: { p_code: string; p_email: string }
+        Returns: void
+      }
+      client_reschedule_booking: {
+        Args: { p_code: string; p_email: string; p_new_slot_ids: string[] }
+        Returns: {
+          booking_id: string
+          booking_code: string
+          slot_date: string
+          start_time: string
+          end_time: string
+        }[]
       }
     }
     Enums: Record<string, never>
