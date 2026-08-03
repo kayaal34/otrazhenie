@@ -28,6 +28,7 @@ type CertificateRow = {
   code: string
   duration_hours: number
   price_kopecks: number
+  recipient_name: string
   buyer_name: string
   buyer_email: string
 }
@@ -44,6 +45,10 @@ function buildHtml(c: CertificateRow): string {
         Привет, ${c.buyer_name}! Мы получили оплату — сертификат в студию «Отражение» готов.
       </p>
       <table style="width: 100%; margin: 20px 0; border-collapse: collapse; font-size: 14px;">
+        <tr>
+          <td style="padding: 6px 0; color: #666;">Кому</td>
+          <td style="padding: 6px 0; text-align: right; font-weight: 600;">${c.recipient_name}</td>
+        </tr>
         <tr>
           <td style="padding: 6px 0; color: #666;">Код сертификата</td>
           <td style="padding: 6px 0; text-align: right; font-family: monospace; font-weight: 600; font-size: 16px;">${c.code}</td>
@@ -107,7 +112,7 @@ Deno.serve(async (req) => {
 
   const { data: certificate, error } = await supabase
     .from('gift_certificates')
-    .select('code, duration_hours, price_kopecks, buyer_name, buyer_email')
+    .select('code, duration_hours, price_kopecks, recipient_name, buyer_name, buyer_email')
     .eq('id', payload.certificate_id)
     .single()
 

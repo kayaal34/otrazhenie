@@ -13,6 +13,7 @@ const labelClass = 'block font-body text-sm font-medium text-blue-deep'
 export function GiftCertificatePage() {
   const { rules, loading: rulesLoading } = usePricingRules()
   const [duration, setDuration] = useState<number | null>(null)
+  const [recipientName, setRecipientName] = useState('')
   const [buyerName, setBuyerName] = useState('')
   const [buyerPhone, setBuyerPhone] = useState('')
   const [buyerEmail, setBuyerEmail] = useState('')
@@ -30,7 +31,7 @@ export function GiftCertificatePage() {
       setError('Выберите длительность сертификата')
       return
     }
-    if (!buyerName.trim() || !buyerPhone.trim() || !buyerEmail.trim()) {
+    if (!recipientName.trim() || !buyerName.trim() || !buyerPhone.trim() || !buyerEmail.trim()) {
       setError('Заполните все поля')
       return
     }
@@ -39,6 +40,7 @@ export function GiftCertificatePage() {
     try {
       const res = await createGiftCertificate({
         durationHours: currentDuration,
+        recipientName,
         buyerName,
         buyerPhone,
         buyerEmail,
@@ -58,7 +60,7 @@ export function GiftCertificatePage() {
           Сертификат оформлен — осталось оплатить
         </h1>
         <p className="mt-3 font-body text-blue-deep/70">
-          Как только увидим оплату, вышлем сертификат на {buyerEmail}.
+          Сертификат для {recipientName} — как только увидим оплату, вышлем его на {buyerEmail}.
         </p>
 
         <div className="mt-4 rounded-xl border border-border bg-surface px-5 py-3">
@@ -113,8 +115,22 @@ export function GiftCertificatePage() {
         </div>
 
         <div>
+          <label className={labelClass} htmlFor="recipientName">
+            Имя получателя
+          </label>
+          <input
+            id="recipientName"
+            placeholder="кому дарите сертификат"
+            value={recipientName}
+            onChange={(e) => setRecipientName(e.target.value)}
+            className={inputClass}
+            required
+          />
+        </div>
+
+        <div>
           <label className={labelClass} htmlFor="buyerName">
-            Имя
+            Ваше имя
           </label>
           <input
             id="buyerName"
@@ -127,7 +143,7 @@ export function GiftCertificatePage() {
 
         <div>
           <label className={labelClass} htmlFor="buyerPhone">
-            Телефон
+            Ваш телефон
           </label>
           <input
             id="buyerPhone"
@@ -142,7 +158,7 @@ export function GiftCertificatePage() {
 
         <div>
           <label className={labelClass} htmlFor="buyerEmail">
-            Email
+            Ваш email
           </label>
           <input
             id="buyerEmail"
