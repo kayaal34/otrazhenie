@@ -12,6 +12,12 @@ const PrivacyPolicyPage = lazy(() =>
 const PublicOfferPage = lazy(() =>
   import('./pages/PublicOfferPage').then((m) => ({ default: m.PublicOfferPage })),
 )
+const GiftCertificatePage = lazy(() =>
+  import('./pages/GiftCertificatePage').then((m) => ({ default: m.GiftCertificatePage })),
+)
+const ManageBookingPage = lazy(() =>
+  import('./pages/ManageBookingPage').then((m) => ({ default: m.ManageBookingPage })),
+)
 const AdminPage = lazy(() => import('./pages/AdminPage').then((m) => ({ default: m.AdminPage })))
 const AdminSetPasswordPage = lazy(() =>
   import('./pages/AdminSetPasswordPage').then((m) => ({ default: m.AdminSetPasswordPage })),
@@ -36,6 +42,8 @@ function App() {
             <Route path="about" element={<AboutPage />} />
             <Route path="privacy" element={<PrivacyPolicyPage />} />
             <Route path="offer" element={<PublicOfferPage />} />
+            <Route path="gift-certificate" element={<GiftCertificatePage />} />
+            <Route path="manage-booking" element={<ManageBookingPage />} />
             <Route path="admin" element={<AdminPage />} />
             <Route path="admin/set-password" element={<AdminSetPasswordPage />} />
             <Route path="*" element={<NotFoundPage />} />

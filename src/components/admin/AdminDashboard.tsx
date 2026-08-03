@@ -9,6 +9,7 @@ import { PromoCodesPanel } from './PromoCodesPanel'
 import { PricingRulesPanel } from './PricingRulesPanel'
 import { BackgroundsPanel } from './BackgroundsPanel'
 import { TrashPanel } from './TrashPanel'
+import { CertificatesPanel } from './CertificatesPanel'
 import { ConfirmProvider } from './ConfirmDialog'
 
 type Tab =
@@ -19,6 +20,7 @@ type Tab =
   | 'promo'
   | 'pricing'
   | 'backgrounds'
+  | 'certificates'
   | 'stats'
 
 const tabs: { key: Tab; label: string }[] = [
@@ -29,6 +31,7 @@ const tabs: { key: Tab; label: string }[] = [
   { key: 'promo', label: 'Промокоды' },
   { key: 'pricing', label: 'Тарифы' },
   { key: 'backgrounds', label: 'Фоны' },
+  { key: 'certificates', label: 'Сертификаты' },
   { key: 'stats', label: 'Статистика' },
 ]
 
@@ -81,6 +84,7 @@ export function AdminDashboard({ session }: AdminDashboardProps) {
           {tab === 'promo' && <PromoCodesPanel />}
           {tab === 'pricing' && <PricingRulesPanel />}
           {tab === 'backgrounds' && <BackgroundsPanel />}
+          {tab === 'certificates' && <CertificatesPanel />}
           {tab === 'stats' && <StatsPanel />}
         </div>
       </div>

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ConfirmationStamp } from './ConfirmationStamp'
-import { formatDateFull, formatRub, formatTimeRange } from '../../lib/format'
-import { PAYMENT_DETAILS } from '../../lib/paymentDetails'
+import { PaymentInstructions, type PaymentBreakdownLine } from '../PaymentInstructions'
+import { formatDateFull, formatTimeRange } from '../../lib/format'
 import type { ConfirmedSummary } from '../../store/bookingStore'
 
 type ConfirmationScreenProps = {
@@ -10,6 +10,24 @@ type ConfirmationScreenProps = {
 }
 
 export function ConfirmationScreen({ summary, onBookAnother }: ConfirmationScreenProps) {
+  const breakdown: PaymentBreakdownLine[] = []
+  if (summary.addonKopecks > 0 || summary.backgroundKopecks > 0 || summary.discountKopecks > 0) {
+    breakdown.push({ label: 'Съёмка', amountKopecks: summary.basePriceKopecks })
+    if (summary.backgroundKopecks > 0) {
+      breakdown.push({ label: 'Фон', amountKopecks: summary.backgroundKopecks })
+    }
+    if (summary.addonKopecks > 0) {
+      breakdown.push({ label: 'Дополнительный фон', amountKopecks: summary.addonKopecks })
+    }
+    if (summary.discountKopecks > 0) {
+      breakdown.push({
+        label: `Промокод ${summary.promoCode}`,
+        amountKopecks: summary.discountKopecks,
+        isDiscount: true,
+      })
+    }
+  }
+
   return (
     <div className="flex flex-col items-center gap-4 py-12 text-center">
       <ConfirmationStamp className="h-16 w-16 text-amber" />
@@ -29,67 +47,13 @@ export function ConfirmationScreen({ summary, onBookAnother }: ConfirmationScree
         <p className="font-mono text-xl font-semibold text-blue-deep">{summary.code}</p>
       </div>
 
-      <div className="mt-4 w-full max-w-sm rounded-2xl border border-amber/40 bg-amber/10 p-5 text-left">
-        <p className="font-display text-base font-semibold text-blue-deep">
-          Переведи {formatRub(summary.priceKopecks)}
-        </p>
-
-        {(summary.addonKopecks > 0 ||
-          summary.backgroundKopecks > 0 ||
-          summary.discountKopecks > 0) && (
-          <dl className="mt-3 flex flex-col gap-1 border-b border-amber/30 pb-3 font-body text-sm text-blue-deep/70">
-            <div className="flex justify-between">
-              <dt>Съёмка</dt>
-              <dd className="font-mono">{formatRub(summary.basePriceKopecks)}</dd>
-            </div>
-            {summary.backgroundKopecks > 0 && (
-              <div className="flex justify-between">
-                <dt>Фон</dt>
-                <dd className="font-mono">+{formatRub(summary.backgroundKopecks)}</dd>
-              </div>
-            )}
-            {summary.addonKopecks > 0 && (
-              <div className="flex justify-between">
-                <dt>Дополнительный фон</dt>
-                <dd className="font-mono">+{formatRub(summary.addonKopecks)}</dd>
-              </div>
-            )}
-            {summary.discountKopecks > 0 && (
-              <div className="flex justify-between">
-                <dt>Промокод {summary.promoCode}</dt>
-                <dd className="font-mono">−{formatRub(summary.discountKopecks)}</dd>
-              </div>
-            )}
-          </dl>
-        )}
-
-        <dl className="mt-3 flex flex-col gap-2 font-body text-sm text-blue-deep">
-          <div className="flex justify-between gap-3">
-            <dt className="text-blue-deep/60">Телефон</dt>
-            <dd className="font-mono">{PAYMENT_DETAILS.phone}</dd>
-          </div>
-          <div className="flex justify-between gap-3">
-            <dt className="text-blue-deep/60">Банк</dt>
-            <dd>{PAYMENT_DETAILS.bank}</dd>
-          </div>
-          <div className="flex justify-between gap-3">
-            <dt className="text-blue-deep/60">Получатель</dt>
-            <dd>{PAYMENT_DETAILS.recipientName}</dd>
-          </div>
-        </dl>
-        <p className="mt-4 font-body text-sm text-blue-deep/80">
-          Пришли скриншот чека с кодом брони <span className="font-mono">{summary.code}</span> в{' '}
-          <a
-            href={`https://t.me/${PAYMENT_DETAILS.telegramContact.replace('@', '')}`}
-            target="_blank"
-            rel="noreferrer"
-            className="font-medium text-blue-primary hover:underline"
-          >
-            Telegram ({PAYMENT_DETAILS.telegramContact})
-          </a>{' '}
-          или WhatsApp ({PAYMENT_DETAILS.whatsappPhone}) — подтвердим бронь, как только увидим
-          оплату.
-        </p>
+      <div className="mt-4">
+        <PaymentInstructions
+          amountKopecks={summary.priceKopecks}
+          code={summary.code}
+          codeLabel="кодом брони"
+          breakdown={breakdown}
+        />
       </div>
 
       <div className="mt-4 flex gap-3">

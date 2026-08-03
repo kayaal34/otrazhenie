@@ -137,6 +137,7 @@ export function BookingPage() {
         withPet: values.withPet,
         comment: values.comment || null,
         pdnConsent: values.pdnConsent,
+        photoConsent: values.photoConsent,
         durationHours: duration,
         withAddon: values.withAddon,
         promoCode,

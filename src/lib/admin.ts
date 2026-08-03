@@ -25,6 +25,7 @@ export type BookingDetailRow = {
   refund_kopecks: number | null
   created_at: string
   deleted_at: string | null
+  photo_consent: boolean
   background_name: string | null
   slot_date: string | null
   start_time: string | null

@@ -18,7 +18,7 @@ const steps = [
   },
   {
     title: 'Забираешь фото',
-    text: 'готовый кадр приходит на почту сразу после съёмки',
+    text: 'готовый кадр приходит на почту в течение дня',
   },
 ]
 
@@ -117,6 +117,14 @@ export function HomePage() {
                   {item.title}
                 </h3>
                 <p className="mt-2 font-body text-sm text-blue-deep/70">{item.text}</p>
+                {item.title === 'Подарок для другого человека' && (
+                  <Link
+                    to="/gift-certificate"
+                    className="mt-3 inline-block font-body text-sm font-medium text-blue-primary hover:underline"
+                  >
+                    Оформить сертификат →
+                  </Link>
+                )}
               </div>
             ))}
           </div>
@@ -194,7 +202,7 @@ export function HomePage() {
           <p className="font-display text-xl font-medium text-blue-deep sm:text-2xl">
             Это не студия с фотографом, который командует «улыбнись».
             <br />
-            Это зеркало, пульт и пять минут наедине с собой.
+            Это зеркало, пульт и время наедине с собой.
           </p>
           <Link
             to="/about"

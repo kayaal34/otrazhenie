@@ -16,6 +16,7 @@ export const bookingFormSchema = z.object({
   pdnConsent: z.boolean().refine((v) => v === true, {
     message: 'Необходимо согласие на обработку персональных данных',
   }),
+  photoConsent: z.boolean(),
 })
 
 export type BookingFormValues = z.infer<typeof bookingFormSchema>

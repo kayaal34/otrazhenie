@@ -228,6 +228,7 @@ export type CreateBookingPayload = {
   withPet: boolean
   comment: string | null
   pdnConsent: boolean
+  photoConsent: boolean
   durationHours: number
   withAddon: boolean
   promoCode: string | null
@@ -259,6 +260,7 @@ export async function createBooking(
     p_with_pet: payload.withPet,
     p_comment: payload.comment,
     p_pdn_consent: payload.pdnConsent,
+    p_photo_consent: payload.photoConsent,
     p_duration_hours: payload.durationHours,
     p_with_addon: payload.withAddon,
     p_promo_code: payload.promoCode,
