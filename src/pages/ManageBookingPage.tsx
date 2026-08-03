@@ -164,7 +164,7 @@ function ManageBookingInner() {
   const canReschedule =
     booking?.status === 'confirmed' &&
     booking.startAt &&
-    new Date(booking.startAt).getTime() - Date.now() >= 48 * 60 * 60 * 1000
+    new Date(booking.startAt).getTime() - Date.now() >= 24 * 60 * 60 * 1000
 
   return (
     <section className="mx-auto max-w-md px-4 py-16 sm:px-6">
@@ -249,7 +249,7 @@ function ManageBookingInner() {
                 </button>
               ) : (
                 <p className="font-body text-xs text-blue-deep/50">
-                  Самостоятельный перенос доступен не позднее чем за 48 часов до начала брони.
+                  Самостоятельный перенос доступен не позднее чем за 24 часа до начала брони.
                   Позже — напишите нам напрямую.
                 </p>
               )}

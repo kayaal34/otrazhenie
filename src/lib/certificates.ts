@@ -12,6 +12,7 @@ function mapCertificateRpcError(raw: string): CertificateError {
 
 export type NewGiftCertificate = {
   durationHours: number
+  recipientName: string
   buyerName: string
   buyerPhone: string
   buyerEmail: string
@@ -29,6 +30,7 @@ export async function createGiftCertificate(
 ): Promise<CreateCertificateResult> {
   const { data, error } = await supabase.rpc('create_gift_certificate', {
     p_duration_hours: input.durationHours,
+    p_recipient_name: input.recipientName,
     p_buyer_name: input.buyerName,
     p_buyer_phone: input.buyerPhone,
     p_buyer_email: input.buyerEmail,
@@ -55,6 +57,7 @@ export type GiftCertificateRow = {
   code: string
   duration_hours: number
   price_kopecks: number
+  recipient_name: string
   buyer_name: string
   buyer_phone: string
   buyer_email: string

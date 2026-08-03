@@ -86,7 +86,8 @@ export function CertificatesPanel() {
               </div>
 
               <div className="mt-2 grid gap-1 font-body text-sm text-blue-deep/80 sm:grid-cols-2">
-                <p>{cert.buyer_name}</p>
+                <p className="font-medium">Кому: {cert.recipient_name}</p>
+                <p>Покупатель: {cert.buyer_name}</p>
                 <p>{cert.buyer_phone}</p>
                 <p>{cert.buyer_email}</p>
                 <p>{cert.duration_hours} ч</p>

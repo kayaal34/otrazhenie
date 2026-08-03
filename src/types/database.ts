@@ -186,6 +186,7 @@ export type Database = {
           code: string
           duration_hours: number
           price_kopecks: number
+          recipient_name: string
           buyer_name: string
           buyer_phone: string
           buyer_email: string
@@ -200,6 +201,7 @@ export type Database = {
           code: string
           duration_hours: number
           price_kopecks: number
+          recipient_name?: string
           buyer_name: string
           buyer_phone: string
           buyer_email: string
@@ -332,6 +334,7 @@ export type Database = {
       create_gift_certificate: {
         Args: {
           p_duration_hours: number
+          p_recipient_name: string
           p_buyer_name: string
           p_buyer_phone: string
           p_buyer_email: string

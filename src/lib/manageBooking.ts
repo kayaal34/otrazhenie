@@ -54,7 +54,7 @@ function mapManageError(raw: string): ManageBookingError {
   }
   if (raw.includes('RESCHEDULE_WINDOW_CLOSED')) {
     return new ManageBookingError(
-      'Самостоятельный перенос доступен только не позднее чем за 48 часов до начала брони. Напишите нам напрямую — решим индивидуально.',
+      'Самостоятельный перенос доступен только не позднее чем за 24 часа до начала брони. Напишите нам напрямую — решим индивидуально.',
     )
   }
   if (raw.includes('SLOT_UNAVAILABLE')) {
