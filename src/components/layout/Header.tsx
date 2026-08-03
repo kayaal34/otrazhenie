@@ -9,6 +9,8 @@ const links = [
   { to: '/booking', label: 'Бронирование' },
   { to: '/gallery', label: 'Галерея' },
   { to: '/about', label: 'О студии' },
+  { to: '/gift-certificate', label: 'Сертификат' },
+  { to: '/manage-booking', label: 'Моя бронь' },
 ]
 
 export function Header() {

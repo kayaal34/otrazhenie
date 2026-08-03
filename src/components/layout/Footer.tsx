@@ -28,7 +28,15 @@ export function Footer() {
           </a>
         </div>
 
-        <div className="flex items-center gap-3 font-body text-xs text-blue-deep/50">
+        <div className="flex flex-wrap items-center justify-center gap-3 font-body text-xs text-blue-deep/50">
+          <Link to="/gift-certificate" className="hover:text-blue-primary">
+            Подарочный сертификат
+          </Link>
+          <span>·</span>
+          <Link to="/manage-booking" className="hover:text-blue-primary">
+            Управление бронью
+          </Link>
+          <span>·</span>
           <Link to="/privacy" className="hover:text-blue-primary">
             Политика конфиденциальности
           </Link>
