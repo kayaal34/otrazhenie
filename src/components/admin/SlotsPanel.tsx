@@ -88,6 +88,11 @@ export function SlotsPanel() {
     <div className="flex flex-col gap-10">
       <section>
         <h2 className="font-display text-lg font-semibold text-blue-deep">Открыть новые слоты</h2>
+        <p className="mt-1 font-body text-xs text-blue-deep/60">
+          Между часовыми слотами автоматически закладывается 10-минутный технический перерыв
+          (уборка/подготовка) — например, 10:00–11:00, затем 11:10–12:10, затем 12:20–13:20.
+          На многочасовую бронь одного клиента это не влияет — внутри неё разрывов нет.
+        </p>
         <form onSubmit={handleCreate} className="mt-3 grid gap-3 sm:grid-cols-4">
           <label className="flex flex-col font-body text-sm text-blue-deep">
             С даты

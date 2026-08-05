@@ -32,6 +32,16 @@ export type SlotGroup = {
   slots: SlotRow[]
 }
 
+/**
+ * Технический перерыв между слотами (уборка/подготовка студии) — заложен
+ * в сетку при генерации слотов (см. createSlotsBulk в lib/admin.ts):
+ * 10:00–11:00, затем перерыв, 11:10–12:10, и т.д. Многочасовая бронь
+ * (несколько слотов подряд для одного клиента) идёт без разрывов внутри
+ * себя — клиент просто продолжает съёмку через это техническое окно;
+ * перерыв ощутим только для СЛЕДУЮЩЕГО, другого клиента.
+ */
+export const SLOT_GAP_MINUTES = 10
+
 function toMinutes(time: string): number {
   const [h, m] = time.split(':').map(Number)
   return h * 60 + m
@@ -104,14 +114,19 @@ export function groupConsecutiveSlots(daySlots: SlotRow[], durationHours: number
     if (sorted[i].status !== 'available' || isSlotPast(sorted[i])) continue
 
     const chain: SlotRow[] = [sorted[i]]
-    let expectedStart = toMinutes(sorted[i].end_time)
+    let prevEnd = toMinutes(sorted[i].end_time)
 
     for (let j = i + 1; chain.length < durationHours && j < sorted.length; j++) {
       const candidate = sorted[j]
       if (candidate.status !== 'available' || isSlotPast(candidate)) break
-      if (toMinutes(candidate.start_time) !== expectedStart) break
+      const candidateStart = toMinutes(candidate.start_time)
+      // Смежным считается и старая сетка без разрыва (0 мин, слоты созданные
+      // до появления технического перерыва), и новая — с перерывом между
+      // слотами (SLOT_GAP_MINUTES). Для самого клиента разница не ощутима —
+      // это один непрерывный сеанс в обоих случаях.
+      if (candidateStart !== prevEnd && candidateStart !== prevEnd + SLOT_GAP_MINUTES) break
       chain.push(candidate)
-      expectedStart = toMinutes(candidate.end_time)
+      prevEnd = toMinutes(candidate.end_time)
     }
 
     if (chain.length === durationHours) {

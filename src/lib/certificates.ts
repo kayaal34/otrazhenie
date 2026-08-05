@@ -66,16 +66,61 @@ export type GiftCertificateRow = {
   paid_at: string | null
   email_sent_at: string | null
   created_at: string
+  deleted_at: string | null
 }
 
 export async function fetchGiftCertificates(): Promise<GiftCertificateRow[]> {
   const { data, error } = await supabase
     .from('gift_certificates')
     .select('*')
+    .is('deleted_at', null)
     .order('created_at', { ascending: false })
 
   if (error) throw new CertificateError(error.message)
   return data ?? []
+}
+
+export async function fetchTrashedCertificates(): Promise<GiftCertificateRow[]> {
+  const { data, error } = await supabase
+    .from('gift_certificates')
+    .select('*')
+    .not('deleted_at', 'is', null)
+    .order('deleted_at', { ascending: false })
+
+  if (error) throw new CertificateError(error.message)
+  return data ?? []
+}
+
+/** Поштучное удаление сертификата — не стирает запись, а перемещает в «Корзину». */
+export async function trashCertificate(certificateId: string): Promise<void> {
+  const { error } = await supabase
+    .from('gift_certificates')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', certificateId)
+
+  if (error) throw new CertificateError(error.message)
+}
+
+export async function restoreCertificate(certificateId: string): Promise<void> {
+  const { error } = await supabase
+    .from('gift_certificates')
+    .update({ deleted_at: null })
+    .eq('id', certificateId)
+
+  if (error) throw new CertificateError(error.message)
+}
+
+/** Безвозвратное удаление одного сертификата из «Корзины». */
+export async function permanentlyDeleteCertificate(certificateId: string): Promise<void> {
+  const { error } = await supabase.from('gift_certificates').delete().eq('id', certificateId)
+  if (error) throw new CertificateError(error.message)
+}
+
+/** Безвозвратно стирает ВСЕ сертификаты, лежащие в «Корзине». */
+export async function emptyCertificateTrash(): Promise<number> {
+  const { data, error } = await supabase.rpc('admin_empty_certificate_trash')
+  if (error) throw new CertificateError(error.message)
+  return data ?? 0
 }
 
 export async function confirmCertificatePayment(certificateId: string): Promise<void> {
