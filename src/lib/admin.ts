@@ -1,7 +1,15 @@
 import { supabase } from './supabase'
 import { addDaysISO } from './format'
-import type { SlotRow, BackgroundRow, PricingRuleRow } from './booking'
+import { SLOT_GAP_MINUTES, type SlotRow, type BackgroundRow, type PricingRuleRow } from './booking'
 import type { PromoDiscountType } from '../types/database'
+
+const SLOT_DURATION_MINUTES = 60
+
+function minutesToTime(totalMinutes: number): string {
+  const h = Math.floor(totalMinutes / 60)
+  const m = totalMinutes % 60
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`
+}
 
 export type BookingDetailRow = {
   id: string
@@ -83,16 +91,25 @@ export async function createSlotsBulk(
   }
 
   const dates = datesBetween(fromISO, toISO)
-  const rows = dates.flatMap((date) =>
-    Array.from({ length: endHour - startHour }, (_, i) => {
-      const h = startHour + i
-      return {
-        slot_date: date,
-        start_time: `${String(h).padStart(2, '0')}:00:00`,
-        end_time: `${String(h + 1).padStart(2, '0')}:00:00`,
-      }
-    }),
-  )
+  const dayEndMinutes = endHour * 60
+
+  const dayRows = (): { start_time: string; end_time: string }[] => {
+    const out: { start_time: string; end_time: string }[] = []
+    let cursor = startHour * 60
+    while (cursor + SLOT_DURATION_MINUTES <= dayEndMinutes) {
+      out.push({
+        start_time: minutesToTime(cursor),
+        end_time: minutesToTime(cursor + SLOT_DURATION_MINUTES),
+      })
+      // Часовой слот + технический перерыв на уборку/подготовку перед
+      // следующим слотом (см. SLOT_GAP_MINUTES в lib/booking.ts).
+      cursor += SLOT_DURATION_MINUTES + SLOT_GAP_MINUTES
+    }
+    return out
+  }
+
+  const template = dayRows()
+  const rows = dates.flatMap((date) => template.map((r) => ({ slot_date: date, ...r })))
 
   const { error, count } = await supabase
     .from('slots')

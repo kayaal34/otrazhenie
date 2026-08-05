@@ -195,6 +195,7 @@ export type Database = {
           paid_at: string | null
           email_sent_at: string | null
           created_at: string
+          deleted_at: string | null
         }
         Insert: {
           id?: string
@@ -210,6 +211,7 @@ export type Database = {
           paid_at?: string | null
           email_sent_at?: string | null
           created_at?: string
+          deleted_at?: string | null
         }
         Update: Partial<Database['public']['Tables']['gift_certificates']['Insert']>
         Relationships: []
@@ -328,6 +330,10 @@ export type Database = {
         Returns: number
       }
       admin_empty_trash: {
+        Args: Record<string, never>
+        Returns: number
+      }
+      admin_empty_certificate_trash: {
         Args: Record<string, never>
         Returns: number
       }

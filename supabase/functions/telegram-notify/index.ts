@@ -31,15 +31,21 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
-type BookingEvent = 'pending_payment' | 'confirmed' | 'cancelled'
+type BookingEvent = 'pending_payment' | 'confirmed' | 'cancelled' | 'rescheduled'
 type CertificateEvent = 'purchased' | 'confirmed'
 
 // Триггер брони шлёт booking_id, триггер сертификата — certificate_id;
-// какое поле пришло, такое событие и обрабатываем.
+// какое поле пришло, такое событие и обрабатываем. old_slot_date/
+// old_start_time/old_end_time приходят только у 'rescheduled' — для
+// сообщения «было → стало» (см. client_reschedule_booking в
+// supabase/patch_024_certificate_trash_and_notifications.sql).
 type NotifyPayload = {
   event: BookingEvent | CertificateEvent
   booking_id?: string
   certificate_id?: string
+  old_slot_date?: string | null
+  old_start_time?: string | null
+  old_end_time?: string | null
 }
 
 type BookingDetail = {
@@ -77,9 +83,21 @@ function formatWhen(dateISO: string | null, start: string | null, end: string | 
   return `${d}.${m}.${y}, ${start.slice(0, 5)}–${end.slice(0, 5)}`
 }
 
-function buildBookingMessage(event: BookingEvent, b: BookingDetail): string {
+function buildBookingMessage(event: BookingEvent, b: BookingDetail, payload: NotifyPayload): string {
   const when = formatWhen(b.slot_date, b.start_time, b.end_time)
   const pet = b.with_pet ? ' · с питомцем 🐾' : ''
+
+  if (event === 'rescheduled') {
+    const oldWhen = formatWhen(payload.old_slot_date ?? null, payload.old_start_time ?? null, payload.old_end_time ?? null)
+    return (
+      `🔁 <b>Клиент перенёс бронь</b>\n` +
+      `📅 Было: ${oldWhen}\n` +
+      `📅 Стало: ${when}\n` +
+      `👤 ${b.client_name}\n` +
+      `📞 ${b.client_phone}\n` +
+      `Код: ${b.booking_code}`
+    )
+  }
 
   if (event === 'pending_payment') {
     return (
@@ -219,7 +237,7 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ ok: false, error: 'booking not found' }), { status: 200 })
     }
 
-    message = buildBookingMessage(payload.event as BookingEvent, booking as BookingDetail)
+    message = buildBookingMessage(payload.event as BookingEvent, booking as BookingDetail, payload)
   } else {
     return new Response(JSON.stringify({ ok: false, error: 'missing booking_id or certificate_id' }), {
       status: 400,
