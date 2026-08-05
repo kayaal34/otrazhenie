@@ -29,8 +29,8 @@ const sections: { heading: string; body: ReactNode }[] = [
     body: (
       <>
         <ul className="list-disc space-y-1 pl-5">
-          <li>1 час — 3 100 ₽;</li>
-          <li>2 часа — 5 800 ₽.</li>
+          <li>1 час — 3 000 ₽;</li>
+          <li>2 часа — 5 500 ₽.</li>
         </ul>
         <p className="mt-2">
           Актуальные цены и доступные длительности указаны на странице бронирования сайта.

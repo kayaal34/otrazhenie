@@ -1,11 +1,16 @@
 import { useLocation } from 'react-router-dom'
 import { PrimaryLink } from '../ui/PrimaryLink'
+import { usePricingRules } from '../../hooks/usePricingRules'
+import { formatRub } from '../../lib/format'
 
 const HIDDEN_PREFIXES = ['/booking', '/admin']
 
 /** Липкая CTA-кнопка снизу экрана на мобильных — из design-doc «Мобильная версия». */
 export function MobileStickyBookCta() {
   const location = useLocation()
+  const { rules, loading } = usePricingRules()
+  const cheapestRule = rules[0]
+
   if (HIDDEN_PREFIXES.some((prefix) => location.pathname.startsWith(prefix))) {
     return null
   }
@@ -16,7 +21,7 @@ export function MobileStickyBookCta() {
       style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
     >
       <PrimaryLink to="/booking" className="w-full">
-        Забронировать — от 3 100 ₽
+        Забронировать{!loading && cheapestRule ? ` — от ${formatRub(cheapestRule.price_kopecks)}` : ''}
       </PrimaryLink>
     </div>
   )
