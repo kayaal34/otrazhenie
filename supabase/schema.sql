@@ -29,8 +29,8 @@ create table if not exists pricing_rules (
 );
 
 insert into pricing_rules (duration_hours, price_kopecks, label) values
-  (1, 310000, '1 час'),
-  (2, 580000, '2 часа')
+  (1, 300000, '1 час'),
+  (2, 550000, '2 часа')
 on conflict (duration_hours) do nothing;
 
 -- -------------------------------------------------------------------------
