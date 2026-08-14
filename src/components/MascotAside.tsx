@@ -21,9 +21,11 @@ export function MascotAside({
 }: MascotAsideProps) {
   const reduced = useReducedMotion()
 
+  // Ширину задаёт вызывающая сторона: собственный w-full здесь выигрывал бы
+  // у переданного снаружи w-*, потому что в CSS Tailwind порядок свой.
   return (
     <motion.div
-      className={`relative mx-auto w-full select-none ${className ?? ''}`}
+      className={`relative select-none ${className ?? ''}`}
       initial={reduced ? false : { opacity: 0, x: from === 'right' ? 28 : -28, scale: 0.95 }}
       whileInView={{ opacity: 1, x: 0, scale: 1 }}
       viewport={{ once: true, margin: '-80px' }}
