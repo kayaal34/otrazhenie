@@ -23,7 +23,7 @@ export function HeroMascot({ className }: HeroMascotProps) {
       {/* Мягкое свечение позади маскота */}
       <motion.div
         aria-hidden
-        className="pointer-events-none absolute inset-x-[-18%] top-[6%] bottom-[8%] rounded-full blur-2xl"
+        className="pointer-events-none absolute inset-x-[-18%] top-[6%] bottom-[8%] hidden rounded-full blur-2xl sm:block"
         style={{
           background:
             'radial-gradient(50% 50% at 50% 45%, rgba(58,123,255,0.22) 0%, rgba(58,123,255,0.08) 45%, rgba(58,123,255,0) 72%)',
@@ -60,7 +60,7 @@ export function HeroMascot({ className }: HeroMascotProps) {
           height={678}
           draggable={false}
           fetchPriority="high"
-          className="relative w-full [filter:drop-shadow(0_18px_26px_rgba(10,46,107,0.22))]"
+          className="relative w-full [filter:drop-shadow(0_9px_13px_rgba(10,46,107,0.13))] sm:[filter:drop-shadow(0_18px_26px_rgba(10,46,107,0.22))]"
         />
       </motion.div>
 

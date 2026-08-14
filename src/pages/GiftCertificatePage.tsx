@@ -95,17 +95,29 @@ export function GiftCertificatePage() {
   }
 
   return (
-    <section className="mx-auto grid max-w-5xl items-start gap-8 px-4 py-16 sm:px-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-16">
+    <section className="mx-auto grid max-w-5xl grid-cols-[minmax(0,1fr)_92px] items-start gap-x-4 gap-y-6 px-4 py-12 sm:grid-cols-[minmax(0,1fr)_132px] sm:px-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-x-16 lg:py-16">
       <div className="mx-auto w-full max-w-md">
-        <h1 className="text-center font-display text-3xl font-semibold text-blue-deep">
+        <h1 className="font-display text-2xl font-semibold text-blue-deep sm:text-3xl lg:text-center">
           Подарочный сертификат
         </h1>
-        <p className="mt-3 text-center font-body text-blue-deep/70">
+        <p className="mt-3 font-body text-blue-deep/70 lg:text-center">
           Не знаешь, что подарить? Сертификат на съёмку в «Отражении» решает эту проблему за пару
           кликов — получатель сам выберет удобное время.
         </p>
+      </div>
 
-        <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5">
+      {/* На телефоне стоит рядом с заголовком, с lg — отдельная колонка во всю высоту */}
+      <MascotAside
+        src={giftMascotUrl}
+        alt="Леопардёнок с букетом цветов — маскот студии «Отражение»"
+        width={412}
+        height={772}
+        from="right"
+        className="lg:sticky lg:top-28 lg:row-span-2"
+      />
+
+      <div className="col-span-2 mx-auto w-full max-w-md lg:col-span-1">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div>
             <span className={labelClass}>Длительность</span>
             {rulesLoading ? (
@@ -181,16 +193,6 @@ export function GiftCertificatePage() {
           </PrimaryButton>
         </form>
       </div>
-
-      {/* На мобильном уходит под форму, чтобы не отодвигать её за первый экран */}
-      <MascotAside
-        src={giftMascotUrl}
-        alt="Леопардёнок с букетом цветов — маскот студии «Отражение»"
-        width={412}
-        height={772}
-        from="right"
-        className="max-w-[150px] sm:max-w-[190px] lg:sticky lg:top-28 lg:max-w-none"
-      />
     </section>
   )
 }
