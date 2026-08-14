@@ -23,7 +23,17 @@ export function AboutPage() {
   return (
     <>
       <section className="mx-auto grid max-w-5xl items-center gap-6 px-4 pt-16 pb-10 sm:px-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-12">
-        <Reveal className="text-center lg:text-left">
+        {/* flow-root удерживает плавающего маскота внутри блока */}
+        <Reveal className="flow-root">
+          {/* На телефоне маскот прижат вправо и обтекается текстом, с lg — своя колонка */}
+          <MascotAside
+            src={mirrorMascotUrl}
+            alt="Леопардёнок с пультом — маскот студии «Отражение»"
+            width={560}
+            height={555}
+            from="right"
+            className="float-right ml-4 w-28 sm:ml-6 sm:w-44 lg:hidden"
+          />
           <h1 className="font-display text-3xl font-semibold text-blue-deep sm:text-4xl">
             О студии
           </h1>
@@ -42,7 +52,7 @@ export function AboutPage() {
           width={560}
           height={555}
           from="right"
-          className="max-w-[190px] sm:max-w-[230px] lg:max-w-none"
+          className="hidden w-full lg:block"
         />
       </section>
 
