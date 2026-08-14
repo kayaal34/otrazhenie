@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ApertureIntro } from '../components/ApertureIntro'
+import { HeroMascot } from '../components/HeroMascot'
 import { PrimaryLink } from '../components/ui/PrimaryLink'
 import { Reveal } from '../components/Reveal'
 import { Accordion } from '../components/Accordion'
@@ -52,28 +53,32 @@ export function HomePage() {
   return (
     <>
       {/* Hero */}
-      <section className="mx-auto flex max-w-4xl flex-col items-center px-4 pt-16 pb-20 text-center sm:px-6 sm:pt-24">
-        <ApertureIntro className="h-20 w-20 text-blue-primary" />
+      <section className="mx-auto grid max-w-6xl items-center gap-10 px-4 pt-14 pb-16 sm:px-6 sm:pt-20 lg:grid-cols-[1.05fr_0.95fr] lg:gap-8 lg:pb-24">
+        <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
+          <ApertureIntro className="h-20 w-20 text-blue-primary" />
 
-        <h1 className="mt-8 font-display text-4xl font-semibold text-blue-deep sm:text-6xl">
-          Отражение
-        </h1>
-        <p className="mt-2 font-body text-base text-blue-deep/70 sm:text-lg">
-          Студия автопортрета в Камышлове
-        </p>
+          <h1 className="mt-8 font-display text-4xl font-semibold text-blue-deep sm:text-6xl">
+            Отражение
+          </h1>
+          <p className="mt-2 font-body text-base text-blue-deep/70 sm:text-lg">
+            Студия автопортрета в Камышлове
+          </p>
 
-        <p className="mt-6 max-w-xl font-display text-xl font-medium text-blue-deep sm:text-2xl">
-          Встал. Нажал на пульт. Увидел себя настоящего.
-        </p>
+          <p className="mt-6 max-w-xl font-display text-xl font-medium text-blue-deep sm:text-2xl">
+            Встал. Нажал на пульт. Увидел себя настоящего.
+          </p>
 
-        <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
-          <PrimaryLink to="/booking">Забронировать время</PrimaryLink>
-          {!rulesLoading && cheapestRule && (
-            <span className="font-mono text-lg text-blue-deep">
-              от {formatRub(cheapestRule.price_kopecks)}
-            </span>
-          )}
+          <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
+            <PrimaryLink to="/booking">Забронировать время</PrimaryLink>
+            {!rulesLoading && cheapestRule && (
+              <span className="font-mono text-lg text-blue-deep">
+                от {formatRub(cheapestRule.price_kopecks)}
+              </span>
+            )}
+          </div>
         </div>
+
+        <HeroMascot />
       </section>
 
       {/* Как это работает */}

@@ -1,6 +1,8 @@
 import { PrimaryLink } from '../components/ui/PrimaryLink'
 import { Reveal } from '../components/Reveal'
 import { CONTACT_INFO } from '../lib/contactInfo'
+import { MascotAside } from '../components/MascotAside'
+import mirrorMascotUrl from '../assets/mascot-mirror.webp'
 
 const steps = [
   {
@@ -20,8 +22,8 @@ const steps = [
 export function AboutPage() {
   return (
     <>
-      <section className="mx-auto max-w-2xl px-4 pt-16 pb-10 text-center sm:px-6">
-        <Reveal>
+      <section className="mx-auto grid max-w-5xl items-center gap-6 px-4 pt-16 pb-10 sm:px-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-12">
+        <Reveal className="text-center lg:text-left">
           <h1 className="font-display text-3xl font-semibold text-blue-deep sm:text-4xl">
             О студии
           </h1>
@@ -33,6 +35,15 @@ export function AboutPage() {
             Ты сам решаешь, какой момент стоит того, чтобы остаться.
           </p>
         </Reveal>
+
+        <MascotAside
+          src={mirrorMascotUrl}
+          alt="Леопардёнок с пультом — маскот студии «Отражение»"
+          width={560}
+          height={555}
+          from="right"
+          className="max-w-[190px] sm:max-w-[230px] lg:max-w-none"
+        />
       </section>
 
       <section className="border-t border-border bg-surface px-4 py-16 sm:px-6">
@@ -101,9 +112,7 @@ export function AboutPage() {
 
       <section className="border-t border-border bg-surface px-4 py-16 sm:px-6">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <h2 className="font-display text-xl font-semibold text-blue-deep">
-            Примеры кадров
-          </h2>
+          <h2 className="font-display text-xl font-semibold text-blue-deep">Примеры кадров</h2>
           <p className="mt-2 font-body text-blue-deep/70">
             Фото- и видеопримеры — в галерее гостей студии.
           </p>

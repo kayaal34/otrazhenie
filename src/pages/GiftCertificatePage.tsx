@@ -1,10 +1,16 @@
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { usePricingRules } from '../hooks/usePricingRules'
-import { createGiftCertificate, CertificateError, type CreateCertificateResult } from '../lib/certificates'
+import {
+  createGiftCertificate,
+  CertificateError,
+  type CreateCertificateResult,
+} from '../lib/certificates'
 import { DurationToggle } from '../components/booking/DurationToggle'
 import { PaymentInstructions } from '../components/PaymentInstructions'
 import { PrimaryButton } from '../components/ui/PrimaryButton'
+import { MascotAside } from '../components/MascotAside'
+import giftMascotUrl from '../assets/mascot-gift.webp'
 
 const inputClass =
   'mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 font-body text-blue-deep outline-none transition-colors focus:border-blue-primary'
@@ -21,7 +27,7 @@ export function GiftCertificatePage() {
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<CreateCertificateResult | null>(null)
 
-  const currentDuration = duration ?? (rules[0]?.duration_hours ?? null)
+  const currentDuration = duration ?? rules[0]?.duration_hours ?? null
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -89,94 +95,102 @@ export function GiftCertificatePage() {
   }
 
   return (
-    <section className="mx-auto max-w-md px-4 py-16 sm:px-6">
-      <h1 className="text-center font-display text-3xl font-semibold text-blue-deep">
-        Подарочный сертификат
-      </h1>
-      <p className="mt-3 text-center font-body text-blue-deep/70">
-        Не знаешь, что подарить? Сертификат на съёмку в «Отражении» решает эту проблему за пару
-        кликов — получатель сам выберет удобное время.
-      </p>
+    <section className="mx-auto grid max-w-5xl items-start gap-8 px-4 py-16 sm:px-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-16">
+      <div className="mx-auto w-full max-w-md">
+        <h1 className="text-center font-display text-3xl font-semibold text-blue-deep">
+          Подарочный сертификат
+        </h1>
+        <p className="mt-3 text-center font-body text-blue-deep/70">
+          Не знаешь, что подарить? Сертификат на съёмку в «Отражении» решает эту проблему за пару
+          кликов — получатель сам выберет удобное время.
+        </p>
 
-      <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5">
-        <div>
-          <span className={labelClass}>Длительность</span>
-          {rulesLoading ? (
-            <p className="mt-2 font-body text-sm text-blue-deep/50">Загружаем тарифы…</p>
-          ) : (
-            <div className="mt-2">
-              <DurationToggle
-                rules={rules}
-                value={currentDuration ?? 0}
-                onChange={setDuration}
-              />
-            </div>
-          )}
-        </div>
+        <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5">
+          <div>
+            <span className={labelClass}>Длительность</span>
+            {rulesLoading ? (
+              <p className="mt-2 font-body text-sm text-blue-deep/50">Загружаем тарифы…</p>
+            ) : (
+              <div className="mt-2">
+                <DurationToggle rules={rules} value={currentDuration ?? 0} onChange={setDuration} />
+              </div>
+            )}
+          </div>
 
-        <div>
-          <label className={labelClass} htmlFor="recipientName">
-            Имя получателя
-          </label>
-          <input
-            id="recipientName"
-            placeholder="кому дарите сертификат"
-            value={recipientName}
-            onChange={(e) => setRecipientName(e.target.value)}
-            className={inputClass}
-            required
-          />
-        </div>
+          <div>
+            <label className={labelClass} htmlFor="recipientName">
+              Имя получателя
+            </label>
+            <input
+              id="recipientName"
+              placeholder="кому дарите сертификат"
+              value={recipientName}
+              onChange={(e) => setRecipientName(e.target.value)}
+              className={inputClass}
+              required
+            />
+          </div>
 
-        <div>
-          <label className={labelClass} htmlFor="buyerName">
-            Ваше имя
-          </label>
-          <input
-            id="buyerName"
-            value={buyerName}
-            onChange={(e) => setBuyerName(e.target.value)}
-            className={inputClass}
-            required
-          />
-        </div>
+          <div>
+            <label className={labelClass} htmlFor="buyerName">
+              Ваше имя
+            </label>
+            <input
+              id="buyerName"
+              value={buyerName}
+              onChange={(e) => setBuyerName(e.target.value)}
+              className={inputClass}
+              required
+            />
+          </div>
 
-        <div>
-          <label className={labelClass} htmlFor="buyerPhone">
-            Ваш телефон
-          </label>
-          <input
-            id="buyerPhone"
-            type="tel"
-            placeholder="+7 900 000-00-00"
-            value={buyerPhone}
-            onChange={(e) => setBuyerPhone(e.target.value)}
-            className={inputClass}
-            required
-          />
-        </div>
+          <div>
+            <label className={labelClass} htmlFor="buyerPhone">
+              Ваш телефон
+            </label>
+            <input
+              id="buyerPhone"
+              type="tel"
+              placeholder="+7 900 000-00-00"
+              value={buyerPhone}
+              onChange={(e) => setBuyerPhone(e.target.value)}
+              className={inputClass}
+              required
+            />
+          </div>
 
-        <div>
-          <label className={labelClass} htmlFor="buyerEmail">
-            Ваш email
-          </label>
-          <input
-            id="buyerEmail"
-            type="email"
-            placeholder="куда отправить сертификат"
-            value={buyerEmail}
-            onChange={(e) => setBuyerEmail(e.target.value)}
-            className={inputClass}
-            required
-          />
-        </div>
+          <div>
+            <label className={labelClass} htmlFor="buyerEmail">
+              Ваш email
+            </label>
+            <input
+              id="buyerEmail"
+              type="email"
+              placeholder="куда отправить сертификат"
+              value={buyerEmail}
+              onChange={(e) => setBuyerEmail(e.target.value)}
+              className={inputClass}
+              required
+            />
+          </div>
 
-        {error && <p className="font-body text-sm text-coral">{error}</p>}
+          {error && <p className="font-body text-sm text-coral">{error}</p>}
 
-        <PrimaryButton type="submit" disabled={submitting || !currentDuration}>
-          {submitting ? 'Оформляем…' : 'Оформить сертификат'}
-        </PrimaryButton>
-      </form>
+          <PrimaryButton type="submit" disabled={submitting || !currentDuration}>
+            {submitting ? 'Оформляем…' : 'Оформить сертификат'}
+          </PrimaryButton>
+        </form>
+      </div>
+
+      {/* На мобильном уходит под форму, чтобы не отодвигать её за первый экран */}
+      <MascotAside
+        src={giftMascotUrl}
+        alt="Леопардёнок с букетом цветов — маскот студии «Отражение»"
+        width={412}
+        height={772}
+        from="right"
+        className="max-w-[150px] sm:max-w-[190px] lg:sticky lg:top-28 lg:max-w-none"
+      />
     </section>
   )
 }
