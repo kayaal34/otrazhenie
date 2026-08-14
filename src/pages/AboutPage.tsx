@@ -144,17 +144,26 @@ export function AboutPage() {
               ВКонтакте
             </a>
           </div>
-          <div className="mt-6 overflow-hidden rounded-xl border border-border">
+          {/* Повыше обычного: карточке адреса на карте нужно место, иначе она перекрывает половину */}
+          <div className="mt-6 h-[360px] overflow-hidden rounded-xl border border-border sm:h-[420px]">
             <iframe
               src={CONTACT_INFO.mapEmbedUrl}
               title="Карта — как добраться до студии"
               width="100%"
-              height="320"
+              height="100%"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
               style={{ border: 0, display: 'block' }}
             />
           </div>
+          <a
+            href={CONTACT_INFO.mapLinkUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-3 inline-block font-body text-sm font-medium text-blue-primary hover:underline"
+          >
+            Открыть в Яндекс.Картах и построить маршрут →
+          </a>
         </Reveal>
       </section>
 
