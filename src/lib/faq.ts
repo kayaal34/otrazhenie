@@ -40,14 +40,14 @@ export async function fetchAllFaqAdmin(): Promise<FaqRow[]> {
 export type FaqInput = {
   question: string
   answer: string
-  sortOrder: number
 }
 
-export async function createFaq(input: FaqInput): Promise<void> {
+/** Новый вопрос всегда добавляется в конец списка. */
+export async function createFaq(input: FaqInput, sortOrder: number): Promise<void> {
   const { error } = await supabase.from('faq_items').insert({
     question: input.question,
     answer: input.answer,
-    sort_order: input.sortOrder,
+    sort_order: sortOrder,
   })
   if (error) throw new FaqError(error.message)
 }
@@ -55,8 +55,13 @@ export async function createFaq(input: FaqInput): Promise<void> {
 export async function updateFaq(id: string, input: FaqInput): Promise<void> {
   const { error } = await supabase
     .from('faq_items')
-    .update({ question: input.question, answer: input.answer, sort_order: input.sortOrder })
+    .update({ question: input.question, answer: input.answer })
     .eq('id', id)
+  if (error) throw new FaqError(error.message)
+}
+
+export async function setFaqOrder(id: string, sortOrder: number): Promise<void> {
+  const { error } = await supabase.from('faq_items').update({ sort_order: sortOrder }).eq('id', id)
   if (error) throw new FaqError(error.message)
 }
 

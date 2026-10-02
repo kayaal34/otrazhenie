@@ -4,6 +4,7 @@ import {
   fetchAllFaqAdmin,
   createFaq,
   updateFaq,
+  setFaqOrder,
   setFaqPublished,
   deleteFaq,
   FaqError,
@@ -15,7 +16,10 @@ import { useConfirm } from './ConfirmDialog'
 const inputClass =
   'mt-1 rounded-xl border border-border bg-surface px-3 py-2 font-body text-blue-deep outline-none transition-colors focus:border-blue-primary'
 
-type EditState = { question: string; answer: string; sortOrder: string }
+const arrowClass =
+  'flex h-8 w-8 items-center justify-center rounded-full border border-border font-body text-sm text-blue-deep transition-colors hover:border-blue-primary disabled:opacity-30 disabled:hover:border-border'
+
+type EditState = { question: string; answer: string }
 
 export function FaqPanel() {
   const confirm = useConfirm()
@@ -23,10 +27,10 @@ export function FaqPanel() {
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
   const [savingId, setSavingId] = useState<string | null>(null)
+  const [reordering, setReordering] = useState(false)
 
   const [question, setQuestion] = useState('')
   const [answer, setAnswer] = useState('')
-  const [sortOrder, setSortOrder] = useState('')
 
   const [edits, setEdits] = useState<Record<string, EditState>>({})
 
@@ -35,16 +39,7 @@ export function FaqPanel() {
     try {
       const data = await fetchAllFaqAdmin()
       setItems(data)
-      setEdits(
-        Object.fromEntries(
-          data.map((f) => [
-            f.id,
-            { question: f.question, answer: f.answer, sortOrder: String(f.sort_order) },
-          ]),
-        ),
-      )
-      const maxOrder = data.reduce((m, f) => Math.max(m, f.sort_order), 0)
-      setSortOrder(String(maxOrder + 10))
+      setEdits(Object.fromEntries(data.map((f) => [f.id, { question: f.question, answer: f.answer }])))
     } catch (err) {
       toast.error(err instanceof FaqError ? err.message : 'Не удалось загрузить вопросы')
     } finally {
@@ -66,12 +61,9 @@ export function FaqPanel() {
 
     setCreating(true)
     try {
-      await createFaq({
-        question: question.trim(),
-        answer: answer.trim(),
-        sortOrder: Number(sortOrder) || 0,
-      })
-      toast.success('Вопрос добавлен')
+      const nextOrder = items.reduce((m, f) => Math.max(m, f.sort_order), 0) + 1
+      await createFaq({ question: question.trim(), answer: answer.trim() }, nextOrder)
+      toast.success('Вопрос добавлен в конец списка')
       setQuestion('')
       setAnswer('')
       await load()
@@ -91,17 +83,46 @@ export function FaqPanel() {
 
     setSavingId(item.id)
     try {
-      await updateFaq(item.id, {
-        question: edit.question.trim(),
-        answer: edit.answer.trim(),
-        sortOrder: Number(edit.sortOrder) || 0,
-      })
+      await updateFaq(item.id, { question: edit.question.trim(), answer: edit.answer.trim() })
       toast.success('Вопрос обновлён')
-      await load()
+      setItems((prev) =>
+        prev.map((f) =>
+          f.id === item.id ? { ...f, question: edit.question.trim(), answer: edit.answer.trim() } : f,
+        ),
+      )
     } catch (err) {
       toast.error(err instanceof FaqError ? err.message : 'Не удалось сохранить вопрос')
     } finally {
       setSavingId(null)
+    }
+  }
+
+  /**
+   * Сдвигает вопрос на одну позицию и перенумеровывает весь список 1..N —
+   * так порядок всегда однозначный, без одинаковых и «дырявых» номеров.
+   * Несохранённые правки текста в других вопросах не сбрасываются.
+   */
+  async function handleMove(index: number, direction: -1 | 1) {
+    const target = index + direction
+    if (target < 0 || target >= items.length) return
+
+    const reordered = [...items]
+    ;[reordered[index], reordered[target]] = [reordered[target], reordered[index]]
+    const renumbered = reordered.map((f, i) => ({ ...f, sort_order: i + 1 }))
+    const changed = renumbered.filter(
+      (f) => f.sort_order !== items.find((x) => x.id === f.id)?.sort_order,
+    )
+
+    const previous = items
+    setItems(renumbered)
+    setReordering(true)
+    try {
+      await Promise.all(changed.map((f) => setFaqOrder(f.id, f.sort_order)))
+    } catch (err) {
+      setItems(previous)
+      toast.error(err instanceof FaqError ? err.message : 'Не удалось изменить порядок')
+    } finally {
+      setReordering(false)
     }
   }
 
@@ -160,18 +181,9 @@ export function FaqPanel() {
               required
             />
             <span className="mt-1 font-body text-xs text-blue-deep/50">
-              Чтобы сделать список, начните каждую строку с «- ».
+              Чтобы сделать список, начните каждую строку с «- ». Новый вопрос добавляется в конец —
+              потом его можно поднять стрелками.
             </span>
-          </label>
-
-          <label className="flex flex-col font-body text-sm text-blue-deep sm:w-32">
-            Порядок
-            <input
-              type="number"
-              value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value)}
-              className={inputClass}
-            />
           </label>
 
           <div>
@@ -185,9 +197,8 @@ export function FaqPanel() {
       <section>
         <h2 className="font-display text-lg font-semibold text-blue-deep">Все вопросы</h2>
         <p className="mt-1 font-body text-xs text-blue-deep/60">
-          На сайте вопросы идут по возрастанию поля «Порядок»: чем меньше число, тем выше вопрос.
-          Чтобы поменять два вопроса местами, обменяйте их числа (например, 20 и 30) и нажмите
-          «Сохранить» у каждого. Скрытые вопросы на сайте не показываются.
+          Порядок на сайте такой же, как в этом списке — меняйте его стрелками ↑ ↓. Порядок
+          сохраняется сразу. Скрытые вопросы на сайте не показываются.
         </p>
         {loading ? (
           <p className="mt-3 font-body text-sm text-blue-deep/50">Загружаем…</p>
@@ -197,76 +208,86 @@ export function FaqPanel() {
           </p>
         ) : (
           <ul className="mt-3 flex flex-col gap-3">
-            {items.map((item) => {
-              const edit = edits[item.id] ?? {
-                question: item.question,
-                answer: item.answer,
-                sortOrder: String(item.sort_order),
-              }
+            {items.map((item, index) => {
+              const edit = edits[item.id] ?? { question: item.question, answer: item.answer }
               const update = (patch: Partial<EditState>) =>
                 setEdits((prev) => ({ ...prev, [item.id]: { ...edit, ...patch } }))
               return (
                 <li
                   key={item.id}
-                  className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4"
+                  className="flex gap-3 rounded-xl border border-border bg-surface p-4"
                 >
-                  <label className="flex flex-col font-body text-xs text-blue-deep/70">
-                    Вопрос
-                    <input
-                      type="text"
-                      value={edit.question}
-                      onChange={(e) => update({ question: e.target.value })}
-                      className={inputClass}
-                    />
-                  </label>
+                  <div className="flex flex-col items-center gap-1 pt-1">
+                    <button
+                      type="button"
+                      aria-label="Поднять выше"
+                      disabled={reordering || index === 0}
+                      onClick={() => handleMove(index, -1)}
+                      className={arrowClass}
+                    >
+                      ↑
+                    </button>
+                    <span className="font-mono text-xs text-blue-deep/40">{index + 1}</span>
+                    <button
+                      type="button"
+                      aria-label="Опустить ниже"
+                      disabled={reordering || index === items.length - 1}
+                      onClick={() => handleMove(index, 1)}
+                      className={arrowClass}
+                    >
+                      ↓
+                    </button>
+                  </div>
 
-                  <label className="flex flex-col font-body text-xs text-blue-deep/70">
-                    Ответ
-                    <textarea
-                      value={edit.answer}
-                      onChange={(e) => update({ answer: e.target.value })}
-                      rows={Math.min(10, Math.max(3, edit.answer.split('\n').length + 1))}
-                      className={inputClass}
-                    />
-                  </label>
-
-                  <div className="flex flex-wrap items-end gap-4">
+                  <div className="flex min-w-0 flex-1 flex-col gap-3">
                     <label className="flex flex-col font-body text-xs text-blue-deep/70">
-                      Порядок
+                      Вопрос
                       <input
-                        type="number"
-                        value={edit.sortOrder}
-                        onChange={(e) => update({ sortOrder: e.target.value })}
-                        className={`${inputClass} w-24`}
+                        type="text"
+                        value={edit.question}
+                        onChange={(e) => update({ question: e.target.value })}
+                        className={inputClass}
                       />
                     </label>
 
-                    <button
-                      type="button"
-                      disabled={savingId === item.id}
-                      onClick={() => handleSave(item)}
-                      className="font-body text-xs text-mint hover:underline disabled:opacity-50"
-                    >
-                      {savingId === item.id ? 'Сохраняем…' : 'Сохранить'}
-                    </button>
+                    <label className="flex flex-col font-body text-xs text-blue-deep/70">
+                      Ответ
+                      <textarea
+                        value={edit.answer}
+                        onChange={(e) => update({ answer: e.target.value })}
+                        rows={Math.min(10, Math.max(3, edit.answer.split('\n').length + 1))}
+                        className={inputClass}
+                      />
+                    </label>
 
-                    <button
-                      type="button"
-                      onClick={() => handleTogglePublished(item)}
-                      className={`font-body text-xs ${
-                        item.is_published ? 'text-mint' : 'text-blue-deep/40'
-                      } hover:underline`}
-                    >
-                      {item.is_published ? 'Показан на сайте' : 'Скрыт'}
-                    </button>
+                    <div className="flex flex-wrap items-center gap-4">
+                      <button
+                        type="button"
+                        disabled={savingId === item.id}
+                        onClick={() => handleSave(item)}
+                        className="font-body text-xs text-mint hover:underline disabled:opacity-50"
+                      >
+                        {savingId === item.id ? 'Сохраняем…' : 'Сохранить'}
+                      </button>
 
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(item)}
-                      className="font-body text-xs text-coral hover:underline"
-                    >
-                      Удалить
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => handleTogglePublished(item)}
+                        className={`font-body text-xs ${
+                          item.is_published ? 'text-mint' : 'text-blue-deep/40'
+                        } hover:underline`}
+                      >
+                        {item.is_published ? 'Показан на сайте' : 'Скрыт'}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(item)}
+                        className="font-body text-xs text-coral hover:underline"
+                      >
+                        Удалить
+                      </button>
+                    </div>
                   </div>
                 </li>
               )
