@@ -3,7 +3,7 @@ import { CONTACT_INFO } from '../../lib/contactInfo'
 
 export function Footer() {
   return (
-    <footer className="border-t border-border bg-cream px-4 py-8 sm:px-6">
+    <footer className="border-t border-border bg-cream px-4 pt-8 pb-28 sm:px-6 sm:pb-8">
       <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 text-center">
         <p className="font-body text-sm text-blue-deep/70">
           Отражение · Студия автопортрета · {CONTACT_INFO.fullAddress}
