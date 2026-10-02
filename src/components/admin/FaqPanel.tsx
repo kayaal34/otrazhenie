@@ -185,8 +185,9 @@ export function FaqPanel() {
       <section>
         <h2 className="font-display text-lg font-semibold text-blue-deep">Все вопросы</h2>
         <p className="mt-1 font-body text-xs text-blue-deep/60">
-          На сайте вопросы идут по возрастанию поля «Порядок». Скрытые вопросы на сайте не
-          показываются.
+          На сайте вопросы идут по возрастанию поля «Порядок»: чем меньше число, тем выше вопрос.
+          Чтобы поменять два вопроса местами, обменяйте их числа (например, 20 и 30) и нажмите
+          «Сохранить» у каждого. Скрытые вопросы на сайте не показываются.
         </p>
         {loading ? (
           <p className="mt-3 font-body text-sm text-blue-deep/50">Загружаем…</p>

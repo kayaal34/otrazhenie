@@ -19,6 +19,7 @@ export async function fetchPublishedFaq(): Promise<FaqRow[]> {
     .eq('is_published', true)
     .order('sort_order', { ascending: true })
     .order('created_at', { ascending: true })
+    .order('id', { ascending: true })
 
   if (error) throw new FaqError(error.message)
   return data ?? []
@@ -30,6 +31,7 @@ export async function fetchAllFaqAdmin(): Promise<FaqRow[]> {
     .select('*')
     .order('sort_order', { ascending: true })
     .order('created_at', { ascending: true })
+    .order('id', { ascending: true })
 
   if (error) throw new FaqError(error.message)
   return data ?? []

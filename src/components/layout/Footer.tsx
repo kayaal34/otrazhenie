@@ -45,6 +45,18 @@ export function Footer() {
             Публичная оферта
           </Link>
         </div>
+
+        <p className="font-body text-xs text-blue-deep/40">
+          Разработка:{' '}
+          <a
+            href="https://kayaal.is-a.dev/"
+            target="_blank"
+            rel="noreferrer"
+            className="hover:text-blue-primary"
+          >
+            kayaal.is-a.dev
+          </a>
+        </p>
       </div>
     </footer>
   )
