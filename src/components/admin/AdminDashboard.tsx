@@ -12,6 +12,7 @@ import { PricingRulesPanel } from './PricingRulesPanel'
 import { BackgroundsPanel } from './BackgroundsPanel'
 import { TrashPanel } from './TrashPanel'
 import { CertificatesPanel } from './CertificatesPanel'
+import { FaqPanel } from './FaqPanel'
 import { ConfirmProvider } from './ConfirmDialog'
 
 type Tab =
@@ -23,6 +24,7 @@ type Tab =
   | 'pricing'
   | 'backgrounds'
   | 'certificates'
+  | 'faq'
   | 'stats'
 
 const tabs: { key: Tab; label: string; badgeKey?: NotificationKey }[] = [
@@ -34,6 +36,7 @@ const tabs: { key: Tab; label: string; badgeKey?: NotificationKey }[] = [
   { key: 'pricing', label: 'Тарифы' },
   { key: 'backgrounds', label: 'Фоны' },
   { key: 'certificates', label: 'Сертификаты', badgeKey: 'certificates' },
+  { key: 'faq', label: 'Вопросы' },
   { key: 'stats', label: 'Статистика' },
 ]
 
@@ -132,6 +135,7 @@ export function AdminDashboard({ session }: AdminDashboardProps) {
           {tab === 'pricing' && <PricingRulesPanel />}
           {tab === 'backgrounds' && <BackgroundsPanel />}
           {tab === 'certificates' && <CertificatesPanel />}
+          {tab === 'faq' && <FaqPanel />}
           {tab === 'stats' && <StatsPanel />}
         </div>
       </div>

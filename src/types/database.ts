@@ -26,6 +26,26 @@ export type Database = {
         Update: Partial<Database['public']['Tables']['backgrounds']['Insert']>
         Relationships: []
       }
+      faq_items: {
+        Row: {
+          id: string
+          question: string
+          answer: string
+          sort_order: number
+          is_published: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          question: string
+          answer: string
+          sort_order?: number
+          is_published?: boolean
+          created_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['faq_items']['Insert']>
+        Relationships: []
+      }
       pricing_rules: {
         Row: {
           duration_hours: number

@@ -3,8 +3,10 @@ import { ApertureIntro } from '../components/ApertureIntro'
 import { HeroMascot } from '../components/HeroMascot'
 import { PrimaryLink } from '../components/ui/PrimaryLink'
 import { Reveal } from '../components/Reveal'
-import { Accordion } from '../components/Accordion'
+import { Accordion, type AccordionItem } from '../components/Accordion'
+import { FaqAnswer } from '../components/FaqAnswer'
 import { usePricingRules } from '../hooks/usePricingRules'
+import { useFaq } from '../hooks/useFaq'
 import { formatRub } from '../lib/format'
 import { FAQ_ITEMS } from '../lib/faqContent'
 
@@ -49,6 +51,13 @@ const advantages = [
 export function HomePage() {
   const { rules, loading: rulesLoading } = usePricingRules()
   const cheapestRule = rules[0]
+  const { items: faqRows, error: faqError } = useFaq()
+
+  // Вопросы редактируются в админке; если база недоступна — показываем
+  // зашитый в код запасной список, чтобы блок не пропадал с сайта.
+  const faqItems: AccordionItem[] = faqError
+    ? FAQ_ITEMS
+    : faqRows.map((row) => ({ question: row.question, answer: <FaqAnswer text={row.answer} /> }))
 
   return (
     <>
@@ -190,16 +199,18 @@ export function HomePage() {
       </section>
 
       {/* FAQ */}
-      <section className="border-t border-border bg-surface px-4 py-16 sm:px-6">
-        <Reveal className="mx-auto max-w-2xl">
-          <h2 className="text-center font-display text-2xl font-semibold text-blue-deep sm:text-3xl">
-            Частые вопросы
-          </h2>
-          <div className="mt-8">
-            <Accordion items={FAQ_ITEMS} />
-          </div>
-        </Reveal>
-      </section>
+      {faqItems.length > 0 && (
+        <section className="border-t border-border bg-surface px-4 py-16 sm:px-6">
+          <Reveal className="mx-auto max-w-2xl">
+            <h2 className="text-center font-display text-2xl font-semibold text-blue-deep sm:text-3xl">
+              Частые вопросы
+            </h2>
+            <div className="mt-8">
+              <Accordion items={faqItems} />
+            </div>
+          </Reveal>
+        </section>
+      )}
 
       {/* О студии — тизер */}
       <section className="px-4 py-16 sm:px-6">
